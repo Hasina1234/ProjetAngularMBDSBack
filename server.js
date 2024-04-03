@@ -48,7 +48,7 @@ app.route(prefix + '/assignments')
   .get(assignment.getAssignments);
 
 app.route(prefix + '/assignments/:id')
-  .get(assignment.getAssignment)
+  .get(assignment.getAssignmentById)
   .delete(assignment.deleteAssignment);
 
 

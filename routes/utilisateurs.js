@@ -1,5 +1,27 @@
-let Assignment = require('../model/utilisateurs');
+let Utilisateur = require('../model/utilisateur');
+const multer = require('multer');
+const fs = require('fs');
 
+const UPLOAD_PATH = path.join(__dirname, '../uploads');
+
+function uploadPhotoAndGetFileName(req, res) {
+    var uploadedFile = req.files[0];
+    if (!uploadedFile) {
+        console.log('Fichier introuvable!');
+        return;
+    }
+    const fileName = `${uploadedFile.originalname.replace(/\s+/g, '')}_${Date.now()}`;
+    const destinationPath = path.join(UPLOAD_PATH, fileName);
+    fs.rename(uploadedFile.path, destinationPath, err => {
+        if (err) {
+            console.log('Erreur lors de l\'upload du fichier');
+            console.error(err);
+        } else {
+            console.log('Fichier uploadé avec succès !');
+        }
+    });
+    return fileName;
+}
 function getUtilisateurs(req, res) {
     Utilisateur.find((err, utilisateurs) => {
         if (err) {
@@ -22,11 +44,12 @@ function getUtilisateurById(req, res) {
 }
 
 function postUtilisateur(req, res) {
+    let photo = uploadPhotoAndGetFileName(req, res);
     let utilisateur = new Utilisateur(req.body);
-    if (!req.file) {
+    if (!photo) {
         return res.status(400).send('Aucune photo téléchargée');
     }
-    utilisateur.photo = req.file.buffer;
+    utilisateur.photo = req.photo;
     utilisateur.save((err) => {
         if (err) {
             res.status(500).send(err);
@@ -37,10 +60,11 @@ function postUtilisateur(req, res) {
 }
 
 function updateUtilisateur(req, res) {
+    let photo = uploadPhotoAndGetFileName(req, res);
     const updateData = req.body;
 
-    if (req.file) {
-        updateData.photo = req.file.buffer; 
+    if (photo) {
+        updateData.photo = photo; 
     }
 
     Utilisateur.findByIdAndUpdate(req.body._id, updateData, { new: true }, (err, utilisateur) => {

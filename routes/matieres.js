@@ -1,4 +1,24 @@
-let Assignment = require('../model/matieres');
+let Matiere = require('../model/matieres');
+const UPLOAD_PATH = path.join(__dirname, '../uploads');
+
+function uploadPhotoAndGetFileName(req, res) {
+    var uploadedFile = req.files[0];
+    if (!uploadedFile) {
+        console.log('Fichier introuvable!');
+        return;
+    }
+    const fileName = `${uploadedFile.originalname.replace(/\s+/g, '')}_${Date.now()}`;
+    const destinationPath = path.join(UPLOAD_PATH, fileName);
+    fs.rename(uploadedFile.path, destinationPath, err => {
+        if (err) {
+            console.log('Erreur lors de l\'upload du fichier');
+            console.error(err);
+        } else {
+            console.log('Fichier uploadé avec succès !');
+        }
+    });
+    return fileName;
+}
 
 function getMatieres(req, res) {
     Matiere.find((err, matieres) => {
@@ -23,11 +43,12 @@ function getMatiereById(req, res) {
 }
 
 function postMatiere(req, res) {
+    let photo = uploadPhotoAndGetFileName(req, res);
     let matiere = new Matiere(req.body);
-    if (!req.file) {
+    if (!photo) {
         return res.status(400).send('Aucun fichier téléchargé');
     }
-    matiere.photo = req.file.buffer;
+    matiere.photo = photo;
     matiere.save((err) => {
         if (err) {
             res.status(500).send(err);
@@ -39,10 +60,11 @@ function postMatiere(req, res) {
 
 
 function updateMatiere(req, res) {
+    let photo = uploadPhotoAndGetFileName(req, res);
     const updateData = req.body;
 
-    if (req.file) {
-        updateData.photo = req.file.buffer; 
+    if (photo) {
+        updateData.photo = photo; 
     }
 
     Matiere.findByIdAndUpdate(req.params.id, updateData, { new: true }, (err, updatedMatiere) => {

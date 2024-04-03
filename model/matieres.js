@@ -3,7 +3,7 @@ let Schema = mongoose.Schema;
 
 const matiereSchema = new Schema({
   nom: String,
-  photo: Buffer,
+  photo: String,
   prof: { type: Schema.Types.ObjectId, ref: 'utilisateurs' }
 });
 

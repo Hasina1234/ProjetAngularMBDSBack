@@ -5,7 +5,7 @@ const utilisateurSchema = new Schema({
   nom: String,
   mail: String,
   mdp: String,
-  photo: Buffer,
+  photo: String,
   role: Number // 0: prof, 1: eleve
 });
 

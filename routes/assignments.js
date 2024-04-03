@@ -88,4 +88,4 @@ function deleteAssignment(req, res) {
 
 
 
-module.exports = { getAssignmentById, getAssignments, postAssignment, getAssignment, updateAssignment, deleteAssignment };
+module.exports = { getAssignmentById, getAssignments, postAssignment, updateAssignment, deleteAssignment };
