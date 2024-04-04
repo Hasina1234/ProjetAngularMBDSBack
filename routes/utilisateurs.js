@@ -1,4 +1,4 @@
-let Utilisateur = require('../model/utilisateur');
+let Utilisateur = require('../model/utilisateurs');
 const multer = require('multer');
 const fs = require('fs');
 
@@ -44,12 +44,14 @@ function getUtilisateurById(req, res) {
 }
 
 function postUtilisateur(req, res) {
-    let photo = uploadPhotoAndGetFileName(req, res);
+    // let photo = uploadPhotoAndGetFileName(req, res);
     let utilisateur = new Utilisateur(req.body);
-    if (!photo) {
-        return res.status(400).send('Aucune photo téléchargée');
-    }
-    utilisateur.photo = req.photo;
+    // if (!photo) {
+    //     return res.status(400).send('Aucune photo téléchargée');
+    // }
+    // utilisateur.photo = req.photo;
+    utilisateur.photo = null;
+    utilisateur.role = 1;
     utilisateur.save((err) => {
         if (err) {
             res.status(500).send(err);

@@ -1,14 +1,14 @@
 let AssignmentDetails = require('../model/assignmentDetails');
 let Assignment = require('../model/assignment');
 
-function postAssignmentDetail(req, res){
+function postAssignmentDetail(req, res) {
     let assignmentDetail = new AssignmentDetails();
     assignmentDetail.assignment = req.params.assignmentId; 
     assignmentDetail.auteur = req.body.auteur;
     assignmentDetail.rendu = false;
 
     console.log("POST assignmentDetail reçu :");
-    console.log(assignmentDetail)
+    console.log(assignmentDetail);
 
     AssignmentDetails.findOne({ assignment: req.params.assignmentId, auteur: req.body.auteur }, (err, existingDetail) => {
         if (err) {
@@ -23,7 +23,13 @@ function postAssignmentDetail(req, res){
             if (err) {
                 return res.status(500).send(err);
             }
-            res.status(201).json(savedDetail);
+
+            Assignment.findByIdAndUpdate(req.params.assignmentId, { $push: { details: savedDetail._id } }, (err) => {
+                if (err) {
+                    return res.status(500).send(err);
+                }
+                res.status(201).json(savedDetail);
+            });
         });
     });
 }
@@ -76,4 +82,17 @@ function getAssignmentDetails(req, res) {
         });
 }
 
-module.exports = { getAssignmentDetails, postAssignmentDetail, getAssignmentDetails, updateAssignmentDetail, deleteAssignmentDetail };
+function getAssignmentDetailById(req, res) {
+    let assignmentDetailId = req.params.id;
+    AssignmentDetails.findById(assignmentDetailId)
+        .populate('auteur')
+        .exec((err, details) => {
+            if (err) {
+                res.status(500).send(err);
+            } else {
+                res.json(details);
+            }
+        });
+}
+
+module.exports = { getAssignmentDetails, postAssignmentDetail, getAssignmentDetailById, updateAssignmentDetail, deleteAssignmentDetail };

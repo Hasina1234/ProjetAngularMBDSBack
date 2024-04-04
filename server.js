@@ -2,6 +2,9 @@ let express = require('express');
 let app = express();
 let bodyParser = require('body-parser');
 let assignment = require('./routes/assignments');
+let matieres = require('./routes/matieres');
+let assignmentDetails = require('./routes/assignmentDetails');
+
 
 let mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
@@ -50,6 +53,28 @@ app.route(prefix + '/assignments')
 app.route(prefix + '/assignments/:id')
   .get(assignment.getAssignmentById)
   .delete(assignment.deleteAssignment);
+
+// http://serveur...../matieres
+app.route(prefix + '/matieres')
+  .post(matieres.postMatiere)
+  .get(matieres.getMatieres)
+  .put(matieres.updateMatiere);
+
+app.route(prefix + '/matieres/:id')
+  .get(matieres.getMatiereById)
+  .delete(matieres.deleteMatiere);
+
+// http://serveur...../assignmentDetails
+app.route(prefix + '/assignmentDetails')
+  .post(assignmentDetails.postAssignmentDetail)
+  .get(assignmentDetails.getAssignmentDetails)
+  .put(assignmentDetails.updateAssignmentDetail);
+
+app.route(prefix + '/assignmentDetails/:id')
+  .get(assignmentDetails.getAssignmentDetailById)
+  .delete(assignmentDetails.deleteAssignmentDetail);
+
+
 
 
 // On démarre le serveur
