@@ -2,6 +2,8 @@ let Utilisateur = require('../model/utilisateurs');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
 
@@ -106,6 +108,7 @@ async function se_connecter(req, res) {
     }
 
     const token = jwt.sign({ id: utilisateur._id }, 'secret', { expiresIn: '1h' });
+    // const token = jwt.sign({ id: utilisateur._id }, 'secret', { expiresIn: '1m' });
 
     const resultat_utilisateur = {
       _id: utilisateur._id,
