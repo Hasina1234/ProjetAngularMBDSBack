@@ -1,4 +1,5 @@
 let Matiere = require('../model/matieres');
+const path = require('path');
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
 
 function uploadPhotoAndGetFileName(req, res) {

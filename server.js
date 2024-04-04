@@ -3,6 +3,7 @@ let app = express();
 let bodyParser = require('body-parser');
 let assignment = require('./routes/assignments');
 let matieres = require('./routes/matieres');
+let utilisateur_routes = require('./routes/utilisateurs');
 let assignmentDetails = require('./routes/assignmentDetails');
 
 
@@ -43,6 +44,9 @@ let port = process.env.PORT || 8010;
 
 // les routes
 const prefix = '/api';
+
+app.post(prefix + '/utilisateur/login',utilisateur_routes.se_connecter );
+app.post(prefix + '/utilisateur/inscription',utilisateur_routes.s_inscrire);
 
 // http://serveur..../assignments
 app.route(prefix + '/assignments')

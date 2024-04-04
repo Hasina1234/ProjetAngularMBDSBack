@@ -1,6 +1,7 @@
 let Utilisateur = require('../model/utilisateurs');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
 
@@ -88,4 +89,67 @@ function deleteUtilisateur(req, res) {
     });
 }
 
-module.exports = { getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur };
+
+
+
+async function se_connecter(req, res) {
+  const { email, motDePasse } = req.body;
+  try {
+    const utilisateur = await Utilisateur.findOne({ mail: email });
+    if (!utilisateur) {
+      throw new Error('Email ou mot de passe incorrect.');
+    }
+
+    const motDePasseValide = await bcrypt.compare(motDePasse, utilisateur.mdp);
+    if (!motDePasseValide) {
+      throw new Error('Email ou mot de passe incorrect.');
+    }
+
+    const token = jwt.sign({ id: utilisateur._id }, 'secret', { expiresIn: '1h' });
+
+    const resultat_utilisateur = {
+      _id: utilisateur._id,
+      nom: utilisateur.nom,
+      mail: utilisateur.mail,
+      photo: utilisateur.photo,
+      role: utilisateur.role
+    };
+
+    res.json({ token, utilisateur: resultat_utilisateur });
+  } catch (erreur) {
+    res.status(400).json({ erreur: erreur.message });
+  }
+}
+
+async function s_inscrire(req, res) {
+  const { nom, email, motDePasse, photo, role } = req.body;
+  try {
+    const utilisateurExistant = await Utilisateur.findOne({ mail: email });
+    if (utilisateurExistant) {
+      throw new Error('Cet e-mail est déjà utilisé.');
+    }
+
+    // Vérifier si l'e-mail contient "@gmail.com"
+    if (!/@gmail\.com$/.test(email)) {
+      throw new Error('L\'adresse e-mail doit être de la forme "@gmail.com".');
+    }
+
+    const hashMotDePasse = await bcrypt.hash(motDePasse, 10);
+
+    const nouvelUtilisateur = new Utilisateur({
+      nom,
+      mail: email,
+      mdp: hashMotDePasse,
+      photo,
+      role
+    });
+
+    // Enregistrer l'utilisateur dans la base de données
+    const utilisateurEnregistre = await nouvelUtilisateur.save();
+    res.json({ message: 'Utilisateur enregistré avec succès', utilisateur: utilisateurEnregistre });
+  } catch (erreur) {
+    res.status(400).json({ erreur: erreur.message });
+  }
+}
+
+module.exports = { getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur,se_connecter,s_inscrire };
