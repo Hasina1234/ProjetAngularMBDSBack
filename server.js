@@ -5,6 +5,10 @@ let assignment = require('./routes/assignments');
 let matieres = require('./routes/matieres');
 let utilisateur_routes = require('./routes/utilisateurs');
 let assignmentDetails = require('./routes/assignmentDetails');
+const multer = require('multer');
+const upload = multer({
+    dest: 'uploads/'
+});
 
 
 let mongoose = require('mongoose');
@@ -45,6 +49,15 @@ let port = process.env.PORT || 8010;
 // les routes
 const prefix = '/api';
 
+// http://serveur..../utilisateurs
+app.route(prefix + '/utilisateurs')
+  .get(utilisateur_routes.getUtilisateurs)
+  .put(upload.any(),utilisateur_routes.updateUtilisateur);
+
+app.route(prefix + '/utilisateurs/:id')
+  .get(utilisateur_routes.getUtilisateurById)
+  .delete(utilisateur_routes.deleteUtilisateur);
+
 app.post(prefix + '/utilisateur/login',utilisateur_routes.se_connecter );
 app.post(prefix + '/utilisateur/inscription',utilisateur_routes.s_inscrire);
 
@@ -62,7 +75,7 @@ app.route(prefix + '/assignments/:id')
 app.route(prefix + '/matieres')
   .post(matieres.postMatiere)
   .get(matieres.getMatieres)
-  .put(matieres.updateMatiere);
+  .put(upload.any(),matieres.updateMatiere);
 
 app.route(prefix + '/matieres/:id')
   .get(matieres.getMatiereById)
@@ -77,6 +90,14 @@ app.route(prefix + '/assignmentDetails')
 app.route(prefix + '/assignmentDetails/:id')
   .get(assignmentDetails.getAssignmentDetailById)
   .delete(assignmentDetails.deleteAssignmentDetail);
+
+// mise en cache
+const staticOptions = {
+  maxAge: '1y', // Durée de mise en cache
+}; 
+
+// dossier image uploader 
+app.use("/api/uploads", express.static("uploads", staticOptions));
 
 
 
