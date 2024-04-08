@@ -62,9 +62,6 @@ app.post(prefix + '/utilisateur/login',utilisateur_routes.se_connecter );
 app.post(prefix + '/utilisateur/inscription',utilisateur_routes.s_inscrire);
 app.route(prefix + '/utilisateur/:id').get(utilisateur_routes.getUtilisateurById)
 
-
-
-
 // http://serveur..../assignments
 app.route(prefix + '/assignments')
   .post(assignment.postAssignment)
