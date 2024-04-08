@@ -54,6 +54,8 @@ app.route(prefix + '/utilisateurs')
   .get(utilisateur_routes.getUtilisateurs)
   .put(upload.any(),utilisateur_routes.updateUtilisateur);
 
+app.route(prefix + '/utilisateurs/modifierUtilisateur').put(upload.any(),utilisateur_routes.updateUtilisateur);
+
 app.route(prefix + '/utilisateurs/:id')
   .get(utilisateur_routes.getUtilisateurById)
   .delete(utilisateur_routes.deleteUtilisateur);

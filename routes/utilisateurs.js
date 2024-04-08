@@ -25,6 +25,25 @@ function uploadPhotoAndGetFileName(req, res) {
     });
     return fileName;
 }
+
+function updateUtilisateur(req, res) {
+    let photo = uploadPhotoAndGetFileName(req, res);
+    const updateData = req.body;
+
+    if (photo) {
+        updateData.photo = photo; 
+    }
+
+    Utilisateur.findByIdAndUpdate(req.body._id, updateData, { new: true }, (err, utilisateur) => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.json({ message: 'Utilisateur mis à jour' });
+        }
+    });
+}
+
+
 function getUtilisateurs(req, res) {
     Utilisateur.find((err, utilisateurs) => {
         if (err) {
@@ -64,22 +83,7 @@ function postUtilisateur(req, res) {
     });
 }
 
-function updateUtilisateur(req, res) {
-    let photo = uploadPhotoAndGetFileName(req, res);
-    const updateData = req.body;
 
-    if (photo) {
-        updateData.photo = photo; 
-    }
-
-    Utilisateur.findByIdAndUpdate(req.body._id, updateData, { new: true }, (err, utilisateur) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json({ message: 'Utilisateur mis à jour' });
-        }
-    });
-}
 
 function deleteUtilisateur(req, res) {
     Utilisateur.findByIdAndRemove(req.params.id, (err, utilisateur) => {
