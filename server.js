@@ -9,7 +9,8 @@ const multer = require('multer');
 const upload = multer({
     dest: 'uploads/'
 });
-
+var cors = require("cors");
+app.use(cors());
 
 let mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
@@ -32,13 +33,7 @@ mongoose.connect(uri, options)
       console.log('Erreur de connexion: ', err);
     });
 
-// Pour accepter les connexions cross-domain (CORS)
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  next();
-});
+
 
 // Pour les formulaires
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -60,9 +55,9 @@ app.route(prefix + '/utilisateurs/:id')
   .get(utilisateur_routes.getUtilisateurById)
   .delete(utilisateur_routes.deleteUtilisateur);
 
-app.post(prefix + '/utilisateur/login',utilisateur_routes.se_connecter );
-app.post(prefix + '/utilisateur/inscription',utilisateur_routes.s_inscrire);
-app.route(prefix + '/utilisateur/:id').get(utilisateur_routes.getUtilisateurById)
+app.post(prefix + '/utilisateurs/login',utilisateur_routes.se_connecter );
+app.post(prefix + '/utilisateurs/inscription',utilisateur_routes.s_inscrire);
+app.route(prefix + '/utilisateurs/:id').get(utilisateur_routes.getUtilisateurById)
 
 // http://serveur..../assignments
 app.route(prefix + '/assignments')

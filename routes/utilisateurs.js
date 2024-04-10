@@ -14,7 +14,7 @@ function uploadPhotoAndGetFileName(req, res) {
         return;
     }
     const fileName = `${uploadedFile.originalname.replace(/\s+/g, '')}_${Date.now()}`;
-    const destinationPath = path.join(UPLOAD_PATH, fileName);
+    const destinationPath = path.join(__dirname, '/../uploads', fileName);
     fs.rename(uploadedFile.path, destinationPath, err => {
         if (err) {
             console.log('Erreur lors de l\'upload du fichier');
@@ -27,10 +27,9 @@ function uploadPhotoAndGetFileName(req, res) {
 }
 
 function updateUtilisateur(req, res) {
-    let photo = uploadPhotoAndGetFileName(req, res);
     const updateData = req.body;
-
-    if (photo) {
+    if (req.files) {
+        var photo = uploadPhotoAndGetFileName(req, res);
         updateData.photo = photo; 
     }
 
