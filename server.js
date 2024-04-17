@@ -58,6 +58,7 @@ app.route(prefix + '/utilisateurs/:id')
 app.post(prefix + '/utilisateurs/login',utilisateur_routes.se_connecter );
 app.post(prefix + '/utilisateurs/inscription',utilisateur_routes.s_inscrire);
 app.route(prefix + '/utilisateurs/:id').get(utilisateur_routes.getUtilisateurById)
+app.route(prefix + '/utilisateurs/getListeMatiere/:id').get(utilisateur_routes.getListeMatiere);
 
 // http://serveur..../assignments
 app.route(prefix + '/assignments')

@@ -1,4 +1,7 @@
 let Utilisateur = require('../model/utilisateurs');
+let Matiere = require('../model/matieres');
+let Devoir = require('../model/assignment');
+let DetailDevoir = require('../model/assignmentDetails');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
@@ -158,4 +161,24 @@ async function s_inscrire(req, res) {
   }
 }
 
-module.exports = { getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur,se_connecter,s_inscrire };
+
+async function getListeMatiere(req, res) {
+  const userId = req.params.id;
+  try {
+    const mongoose = require('mongoose');
+    const utilisateurObjectId = mongoose.Types.ObjectId(userId);
+    const assignmentDetails = await DetailDevoir.find({ auteur: utilisateurObjectId });
+    const assignmentIds = assignmentDetails.map(detail => detail.assignment);
+    const assignments = await Devoir.find({ _id: { $in: assignmentIds } });
+    const matiereIds = assignments.map(assignment => assignment.matiere);
+    const matieres = await Matiere.find({ _id: { $in: matiereIds } });
+
+    res.status(200).json(matieres);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des matières de l\'utilisateur :', error);
+    res.status(500).json({ error: 'Erreur de serveur lors de la récupération des matières' });
+  }
+}
+
+
+module.exports = { getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur,se_connecter,s_inscrire,getListeMatiere };
