@@ -31,9 +31,36 @@ function uploadPhotoAndGetFileName(req, res) {
 
 function updateUtilisateur(req, res) {
     const updateData = req.body;
+    const ancienUtilisateur = Utilisateur.findById(req.body._id); // Supposons que vous puissiez obtenir l'utilisateur à partir de la base de données
+    if (!ancienUtilisateur) {
+        console.log("Aucun utilisateur trouvé avec l'ID spécifié :", req.body._id);
+        res.status(404).send({ message: "Utilisateur non trouvé" });
+        return;
+    }
+
     if (req.files) {
         var photo = uploadPhotoAndGetFileName(req, res);
-        updateData.photo = photo; 
+        if (photo) {
+            updateData.photo = photo;
+            console.log("Nouvelle photo sélectionnée :", photo);
+        } else {
+            console.log("Aucune nouvelle photo sélectionnée.");
+        }
+    } else {
+        // Si aucune nouvelle photo n'est envoyée, conserver la photo actuelle de l'utilisateur si elle existe
+        if (!updateData.photo) {
+            // Si aucune nouvelle photo n'est sélectionnée et que l'ancienne photo n'existe pas, supprimer la clé 'photo' de updateData
+            delete updateData.photo;
+            console.log("Aucune photo n'a été sélectionnée et aucune photo n'était présente dans la base de données.");
+        }
+    }
+
+    if (updateData.nom !== ancienUtilisateur.nom) {
+        console.log("Le nom de l'utilisateur a été modifié :", ancienUtilisateur.nom, "->", updateData.nom);
+    }
+
+    if (updateData.mail !== ancienUtilisateur.mail) {
+        console.log("Le mail de l'utilisateur a été modifié :", ancienUtilisateur.mail, "->", updateData.mail);
     }
 
     Utilisateur.findByIdAndUpdate(req.body._id, updateData, { new: true }, (err, utilisateur) => {
@@ -44,6 +71,9 @@ function updateUtilisateur(req, res) {
         }
     });
 }
+
+
+
 
 
 function getUtilisateurs(req, res) {

@@ -65,13 +65,35 @@ function postMatiere(req, res) {
 
 function updateMatiere(req, res) {
     const updateData = req.body;
+    const ancienneMatiere = Matiere.findById(req.params.id); // Supposons que vous puissiez obtenir la matière à partir de la base de données
+    if (!ancienneMatiere) {
+        console.log("Aucune matière trouvée avec l'ID spécifié :", req.params.id);
+        res.status(404).send({ message: "Matière non trouvée" });
+        return;
+    }
 
     if (req.files) {
         let photo = uploadPhotoAndGetFileName(req, res);
         if (photo) {
             updateData.photo = photo; 
+            console.log("Nouvelle photo sélectionnée :", photo);
+        } else {
+            console.log("Aucune nouvelle photo sélectionnée.");
+        }
+    } else {
+        // Si aucune nouvelle photo n'est envoyée, conserver la photo actuelle de la matière si elle existe
+        if (!updateData.photo) {
+            // Si aucune nouvelle photo n'est sélectionnée et que l'ancienne photo n'existe pas, supprimer la clé 'photo' de updateData
+            delete updateData.photo;
+            console.log("Aucune photo n'a été sélectionnée et aucune photo n'était présente dans la base de données.");
         }
     }
+
+    if (updateData.nom !== ancienneMatiere.nom) {
+        console.log("Le nom de la matière a été modifié :", ancienneMatiere.nom, "->", updateData.nom);
+    }
+
+    // Autres comparaisons pour les champs que vous souhaitez suivre...
 
     Matiere.findByIdAndUpdate(req.params.id, updateData, { new: true }, (err, updatedMatiere) => {
         if (err) {
@@ -81,6 +103,7 @@ function updateMatiere(req, res) {
         }
     });
 }
+
 
 
 function deleteMatiere(req, res) {
