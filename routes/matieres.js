@@ -64,21 +64,24 @@ function postMatiere(req, res) {
 
 
 function updateMatiere(req, res) {
-    let photo = uploadPhotoAndGetFileName(req, res);
     const updateData = req.body;
 
-    if (photo) {
-        updateData.photo = photo; 
+    if (req.files) {
+        let photo = uploadPhotoAndGetFileName(req, res);
+        if (photo) {
+            updateData.photo = photo; 
+        }
     }
 
     Matiere.findByIdAndUpdate(req.params.id, updateData, { new: true }, (err, updatedMatiere) => {
         if (err) {
             res.status(500).send(err);
         } else {
-            res.json({ message: 'Updated', updatedMatiere });
+            res.json({ message: 'Matière mise à jour', updatedMatiere });
         }
     });
 }
+
 
 function deleteMatiere(req, res) {
     Matiere.findByIdAndRemove(req.params.id, (err, deletedMatiere) => {
