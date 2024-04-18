@@ -1,5 +1,7 @@
 let Matiere = require('../model/matieres');
 const path = require('path');
+const fs = require('fs');
+
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
 
 function uploadPhotoAndGetFileName(req, res) {
@@ -44,17 +46,18 @@ function getMatiereById(req, res) {
 }
 
 function postMatiere(req, res) {
-    let photo = uploadPhotoAndGetFileName(req, res);
+    // let photo = uploadPhotoAndGetFileName(req, res);
     let matiere = new Matiere(req.body);
-    if (!photo) {
-        return res.status(400).send('Aucun fichier téléchargé');
-    }
-    matiere.photo = photo;
+    // if (!photo) {
+    //     return res.status(400).send('Aucun fichier téléchargé');
+    // }
+    matiere.photo = null;
+    // matiere.photo = photo;
     matiere.save((err) => {
         if (err) {
             res.status(500).send(err);
         } else {
-            res.json({ message: `${matiere.nom} saved!` });
+            res.json({ message: `${matiere.nom} enregistré!` });
         }
     });
 }
