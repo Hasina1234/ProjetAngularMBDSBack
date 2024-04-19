@@ -1,18 +1,5 @@
 let Assignment = require('../model/assignment');
 
-// Récupérer tous les assignments (GET)
-/*
-function getAssignments(req, res){
-    Assignment.find((err, assignments) => {
-        if(err){
-            res.send(err)
-        }
-
-        res.send(assignments);
-    });
-}
-*/
-
 function getAssignments(req, res){
     let aggregateQuery = Assignment.aggregate();
 
@@ -86,6 +73,81 @@ function deleteAssignment(req, res) {
     })
 }
 
+function getAssignmentsRenduEleve(req, res) {
+    const auteurId = req.params.id; 
+    Assignment.find({})
+        .populate({
+            path: 'details',
+            match: {
+                auteur: auteurId
+            }
+        })
+        .populate('matiere')
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+            const filteredAssignments = assignments.filter(assignment => assignment.details.length > 0);
+            res.json(filteredAssignments);
+        });
+}
+
+function getAssignmentsNonRenduEleve(req, res) {
+    const auteurId = req.params.id; 
+    Assignment.find({})
+        .populate({
+            path: 'details',
+            match: {
+                auteur: auteurId
+            }
+        })
+        .populate('matiere')
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+
+            const filteredAssignments = assignments.filter(assignment => {
+                if (assignment.details.length > 0) {
+                    const isAuteurPresent = assignment.details.some(detail => detail.auteur.toString() === auteurId);
+                    return !isAuteurPresent;
+                }
+                return true;
+            });
+
+            res.json(filteredAssignments);
+        });
+}
+
+function getAssignmentsByMatiereAndProf(req, res) {
+    const matiereId = req.params.matiereId;
+    const profId = req.params.profId;
+
+    Assignment.find({
+        matiere: matiereId
+    })
+    .populate({
+        path: 'matiere',
+        match: { prof: profId }
+    })
+    .exec((err, assignments) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        res.json(assignments);
+    });
+}
 
 
-module.exports = { getAssignmentById, getAssignments, postAssignment, updateAssignment, deleteAssignment };
+
+
+module.exports = { 
+    getAssignmentById, 
+    getAssignments,
+    postAssignment, 
+    updateAssignment, 
+    deleteAssignment,
+    getAssignmentsRenduEleve,
+    getAssignmentsNonRenduEleve,
+    getAssignmentsByMatiereAndProf
+};

@@ -5,6 +5,8 @@ function postAssignmentDetail(req, res) {
     let assignmentDetail = new AssignmentDetails();
     assignmentDetail.assignment = req.params.assignmentId; 
     assignmentDetail.auteur = req.body.auteur;
+    assignmentDetail.note = null;
+    assignmentDetail.remarque = null;
     assignmentDetail.rendu = false;
 
     console.log("POST assignmentDetail reçu :");
@@ -28,7 +30,7 @@ function postAssignmentDetail(req, res) {
                 if (err) {
                     return res.status(500).send(err);
                 }
-                res.status(201).json(savedDetail);
+                res.status(200).json(savedDetail);
             });
         });
     });
@@ -95,4 +97,50 @@ function getAssignmentDetailById(req, res) {
         });
 }
 
-module.exports = { getAssignmentDetails, postAssignmentDetail, getAssignmentDetailById, updateAssignmentDetail, deleteAssignmentDetail };
+function getAssignmentsRenduProf(req, res) {
+    const matiereId = req.params.id;
+    AssignmentDetails.find({ rendu: true })
+        .populate({
+            path: 'assignment',
+            match: {
+                matiere: matiereId
+            },
+            populate: { path: 'matiere' }
+        })
+        .populate('auteur')
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+            res.json(assignments);
+        });
+}
+
+function getAssignmentsNonRenduProf(req, res) {
+    const matiereId = req.params.id;
+    AssignmentDetails.find({ rendu: false })
+        .populate({
+            path: 'assignment',
+            match: {
+                matiere: matiereId
+            },
+            populate: { path: 'matiere' }
+        })
+        .populate('auteur')
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+            res.json(assignments);
+        });
+}
+
+module.exports = { 
+    getAssignmentDetails, 
+    postAssignmentDetail, 
+    getAssignmentDetailById, 
+    updateAssignmentDetail, 
+    deleteAssignmentDetail,
+    getAssignmentsRenduProf,
+    getAssignmentsNonRenduProf
+};

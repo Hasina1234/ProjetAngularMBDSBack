@@ -9,7 +9,7 @@ function uploadPhotoAndGetFileName(req, res) {
         return;
     }
     const fileName = `${uploadedFile.originalname.replace(/\s+/g, '')}_${Date.now()}`;
-    const destinationPath = path.join(UPLOAD_PATH, fileName);
+    const destinationPath = path.join(__dirname, '/../uploads', fileName);
     fs.rename(uploadedFile.path, destinationPath, err => {
         if (err) {
             console.log('Erreur lors de l\'upload du fichier');
@@ -61,10 +61,9 @@ function postMatiere(req, res) {
 
 
 function updateMatiere(req, res) {
-    let photo = uploadPhotoAndGetFileName(req, res);
     const updateData = req.body;
-
-    if (photo) {
+    if (req.files) {
+        var photo = uploadPhotoAndGetFileName(req, res);
         updateData.photo = photo; 
     }
 
@@ -87,4 +86,16 @@ function deleteMatiere(req, res) {
     });
 }
 
-module.exports = { getMatiereById, getMatieres, postMatiere, updateMatiere, deleteMatiere};
+
+function getMatiereByProf(req, res) {
+    let profId = req.params.idProf;
+    Matiere.find({ prof: profId }, (err, matieres) => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.json(matieres);
+        }
+    });
+}
+
+module.exports = { getMatiereById, getMatieres, postMatiere, updateMatiere, deleteMatiere, getMatiereByProf };

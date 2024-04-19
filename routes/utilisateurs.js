@@ -27,13 +27,16 @@ function uploadPhotoAndGetFileName(req, res) {
 }
 
 function updateUtilisateur(req, res) {
-    const updateData = req.body;
+    let utilisateur = {
+        nom: req.body.nom,
+        mail: req.body.mail
+    }
     if (req.files) {
         var photo = uploadPhotoAndGetFileName(req, res);
-        updateData.photo = photo; 
+        utilisateur.photo = photo; 
     }
 
-    Utilisateur.findByIdAndUpdate(req.body._id, updateData, { new: true }, (err, utilisateur) => {
+    Utilisateur.findByIdAndUpdate(req.body._id, utilisateur, { new: true }, (err, utilisateur) => {
         if (err) {
             res.status(500).send(err);
         } else {

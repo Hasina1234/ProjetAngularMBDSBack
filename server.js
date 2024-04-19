@@ -69,6 +69,10 @@ app.route(prefix + '/assignments/:id')
   .get(assignment.getAssignmentById)
   .delete(assignment.deleteAssignment);
 
+app.route(prefix + '/assignments/RenduEleve/:id').get(assignment.getAssignmentsRenduEleve);
+app.route(prefix + '/assignments/NonRenduEleve/:id').get(assignment.getAssignmentsNonRenduEleve);
+app.route(prefix + '/assignments/byMatiere/:matiereId/:profId').get(assignment.getAssignmentsByMatiereAndProf);
+
 // http://serveur...../matieres
 app.route(prefix + '/matieres')
   .post(matieres.postMatiere)
@@ -79,6 +83,8 @@ app.route(prefix + '/matieres/:id')
   .get(matieres.getMatiereById)
   .delete(matieres.deleteMatiere);
 
+app.route(prefix + '/matieres/byProf/:idProf').get(matieres.getMatiereByProf);
+
 // http://serveur...../assignmentDetails
 app.route(prefix + '/assignmentDetails')
   .post(assignmentDetails.postAssignmentDetail)
@@ -88,6 +94,9 @@ app.route(prefix + '/assignmentDetails')
 app.route(prefix + '/assignmentDetails/:id')
   .get(assignmentDetails.getAssignmentDetailById)
   .delete(assignmentDetails.deleteAssignmentDetail);
+
+app.route(prefix + '/assignmentsDetails/RenduProf/:id').get(assignmentDetails.getAssignmentsRenduProf);
+app.route(prefix + '/assignmentsDetails/NonRenduProf/:id').get(assignmentDetails.getAssignmentsNonRenduProf);
 
 // mise en cache
 const staticOptions = {
