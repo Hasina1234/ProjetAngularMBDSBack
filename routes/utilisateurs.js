@@ -1,4 +1,7 @@
 let Utilisateur = require('../model/utilisateurs');
+let Matiere = require('../model/matieres');
+let Devoir = require('../model/assignment');
+let DetailDevoir = require('../model/assignmentDetails');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
@@ -27,13 +30,38 @@ function uploadPhotoAndGetFileName(req, res) {
 }
 
 function updateUtilisateur(req, res) {
-    let utilisateur = {
-        nom: req.body.nom,
-        mail: req.body.mail
+
+    const updateData = req.body;
+    const ancienUtilisateur = Utilisateur.findById(req.body._id); // Supposons que vous puissiez obtenir l'utilisateur à partir de la base de données
+    if (!ancienUtilisateur) {
+        console.log("Aucun utilisateur trouvé avec l'ID spécifié :", req.body._id);
+        res.status(404).send({ message: "Utilisateur non trouvé" });
+        return;
     }
+
     if (req.files) {
         var photo = uploadPhotoAndGetFileName(req, res);
-        utilisateur.photo = photo; 
+        if (photo) {
+            updateData.photo = photo;
+            console.log("Nouvelle photo sélectionnée :", photo);
+        } else {
+            console.log("Aucune nouvelle photo sélectionnée.");
+        }
+    } else {
+        // Si aucune nouvelle photo n'est envoyée, conserver la photo actuelle de l'utilisateur si elle existe
+        if (!updateData.photo) {
+            // Si aucune nouvelle photo n'est sélectionnée et que l'ancienne photo n'existe pas, supprimer la clé 'photo' de updateData
+            delete updateData.photo;
+            console.log("Aucune photo n'a été sélectionnée et aucune photo n'était présente dans la base de données.");
+        }
+    }
+
+    if (updateData.nom !== ancienUtilisateur.nom) {
+        console.log("Le nom de l'utilisateur a été modifié :", ancienUtilisateur.nom, "->", updateData.nom);
+    }
+
+    if (updateData.mail !== ancienUtilisateur.mail) {
+        console.log("Le mail de l'utilisateur a été modifié :", ancienUtilisateur.mail, "->", updateData.mail);
     }
 
     Utilisateur.findByIdAndUpdate(req.body._id, utilisateur, { new: true }, (err, utilisateur) => {
@@ -44,6 +72,9 @@ function updateUtilisateur(req, res) {
         }
     });
 }
+
+
+
 
 
 function getUtilisateurs(req, res) {
@@ -161,4 +192,24 @@ async function s_inscrire(req, res) {
   }
 }
 
-module.exports = { getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur,se_connecter,s_inscrire };
+
+async function getListeMatiere(req, res) {
+  const userId = req.params.id;
+  try {
+    const mongoose = require('mongoose');
+    const utilisateurObjectId = mongoose.Types.ObjectId(userId);
+    const assignmentDetails = await DetailDevoir.find({ auteur: utilisateurObjectId });
+    const assignmentIds = assignmentDetails.map(detail => detail.assignment);
+    const assignments = await Devoir.find({ _id: { $in: assignmentIds } });
+    const matiereIds = assignments.map(assignment => assignment.matiere);
+    const matieres = await Matiere.find({ _id: { $in: matiereIds } });
+
+    res.status(200).json(matieres);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des matières de l\'utilisateur :', error);
+    res.status(500).json({ error: 'Erreur de serveur lors de la récupération des matières' });
+  }
+}
+
+
+module.exports = { getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur,se_connecter,s_inscrire,getListeMatiere };
