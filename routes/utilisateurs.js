@@ -10,72 +10,65 @@ const bcrypt = require('bcrypt');
 
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
 
-function uploadPhotoAndGetFileName(req, res) {
+function uploadPhotoAndGetFileName(req) {
     var uploadedFile = req.files[0];
     if (!uploadedFile) {
         console.log('Fichier introuvable!');
-        return;
+        return null;
     }
     const fileName = `${uploadedFile.originalname.replace(/\s+/g, '')}_${Date.now()}`;
     const destinationPath = path.join(__dirname, '/../uploads', fileName);
-    fs.rename(uploadedFile.path, destinationPath, err => {
-        if (err) {
-            console.log('Erreur lors de l\'upload du fichier');
-            console.error(err);
-        } else {
-            console.log('Fichier uploadé avec succès !');
-        }
-    });
-    return fileName;
+    fs.renameSync(uploadedFile.path, destinationPath); 
+    console.log('Fichier uploadé avec succès ! Chemin du fichier :', destinationPath);
+    return fileName; 
 }
 
 function updateUtilisateur(req, res) {
-
     const updateData = req.body;
-    const ancienUtilisateur = Utilisateur.findById(req.body._id); // Supposons que vous puissiez obtenir l'utilisateur à partir de la base de données
-    if (!ancienUtilisateur) {
-        console.log("Aucun utilisateur trouvé avec l'ID spécifié :", req.body._id);
-        res.status(404).send({ message: "Utilisateur non trouvé" });
-        return;
-    }
-
-    if (req.files) {
-        var photo = uploadPhotoAndGetFileName(req, res);
-        if (photo) {
-            updateData.photo = photo;
-            console.log("Nouvelle photo sélectionnée :", photo);
-        } else {
-            console.log("Aucune nouvelle photo sélectionnée.");
-        }
-    } else {
-        // Si aucune nouvelle photo n'est envoyée, conserver la photo actuelle de l'utilisateur si elle existe
-        if (!updateData.photo) {
-            // Si aucune nouvelle photo n'est sélectionnée et que l'ancienne photo n'existe pas, supprimer la clé 'photo' de updateData
-            delete updateData.photo;
-            console.log("Aucune photo n'a été sélectionnée et aucune photo n'était présente dans la base de données.");
-        }
-    }
-
-    if (updateData.nom !== ancienUtilisateur.nom) {
-        console.log("Le nom de l'utilisateur a été modifié :", ancienUtilisateur.nom, "->", updateData.nom);
-    }
-
-    if (updateData.mail !== ancienUtilisateur.mail) {
-        console.log("Le mail de l'utilisateur a été modifié :", ancienUtilisateur.mail, "->", updateData.mail);
-    }
-
-    Utilisateur.findByIdAndUpdate(req.body._id, utilisateur, { new: true }, (err, utilisateur) => {
+    Utilisateur.findById(req.body._id, (err, utilisateur) => {
         if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json({ message: 'Utilisateur mis à jour' });
+            console.log("Erreur lors de la recherche de l'utilisateur dans la base de données :", err);
+            res.status(500).send({ message: "Erreur lors de la recherche de l'utilisateur dans la base de données" });
+            return;
         }
+        if (!utilisateur) {
+            console.log("Aucun utilisateur trouvé avec l'ID spécifié :", req.body._id);
+            res.status(404).send({ message: "Utilisateur non trouvé" });
+            return;
+        }
+        if (req.files) {
+            var photoName = uploadPhotoAndGetFileName(req);
+            if (photoName) {
+                updateData.photo = photoName;
+                console.log("Nouvelle photo sélectionnée :", photoName);
+                utilisateur.photo = photoName;
+            } else {
+                console.log("Aucune nouvelle photo sélectionnée.");
+            }
+        } else {
+            if (!updateData.photo) {
+                delete updateData.photo;
+                console.log("Aucune photo n'a été sélectionnée et aucune photo n'était présente dans la base de données.");
+            }
+        }
+        if (updateData.nom !== utilisateur.nom) {
+            console.log("Le nom de l'utilisateur a été modifié :", utilisateur.nom, "->", updateData.nom);
+            utilisateur.nom = updateData.nom;
+        }
+        if (updateData.mail !== utilisateur.mail) {
+            console.log("Le mail de l'utilisateur a été modifié :", utilisateur.mail, "->", updateData.mail);
+            utilisateur.mail = updateData.mail;
+        }
+        utilisateur.save((err, utilisateurMaj) => {
+            if (err) {
+                console.log("Erreur lors de la mise à jour de l'utilisateur dans la base de données :", err);
+                res.status(500).send({ message: "Erreur lors de la mise à jour de l'utilisateur dans la base de données" });
+            } else {
+                res.json({ message: 'Utilisateur mis à jour', utilisateur: utilisateurMaj });
+            }
+        });
     });
 }
-
-
-
-
 
 function getUtilisateurs(req, res) {
     Utilisateur.find((err, utilisateurs) => {
