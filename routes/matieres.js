@@ -1,4 +1,5 @@
 let Matiere = require('../model/matieres');
+let Utilisateur = require('../model/utilisateurs');
 const path = require('path');
 const fs = require('fs');
 
@@ -24,13 +25,15 @@ function uploadPhotoAndGetFileName(req, res) {
 }
 
 function getMatieres(req, res) {
-    Matiere.find((err, matieres) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json(matieres);
-        }
-    });
+    Matiere.find()
+        .populate('prof', '_id nom photo') 
+        .exec((err, matieres) => {
+            if (err) {
+                res.status(500).send(err);
+            } else {
+                res.json(matieres);
+            }
+        });
 }
 
 
