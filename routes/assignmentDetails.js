@@ -1,40 +1,66 @@
 let AssignmentDetails = require('../model/assignmentDetails');
 let Assignment = require('../model/assignment');
 
+// function postAssignmentDetail(req, res) {
+//     let assignmentDetail = new AssignmentDetails();
+//     assignmentDetail.assignment = req.params.assignmentId; 
+//     assignmentDetail.auteur = req.body.auteur;
+//     assignmentDetail.note = req.body.note;
+//     assignmentDetail.remarque = req.body.remarque;
+//     assignmentDetail.rendu = req.body.remarque;
+
+//     console.log("POST assignmentDetail reçu :");
+//     console.log(assignmentDetail);
+
+//     AssignmentDetails.findOne({ assignment: req.params.assignmentId, auteur: req.body.auteur }, (err, existingDetail) => {
+//         if (err) {
+//             return res.status(500).send(err);
+//         }
+
+//         if (existingDetail) {
+//             return res.status(200).json({ message: "Vous avez déjà soumis cet assignment." });
+//         }
+
+//         assignmentDetail.save((err, savedDetail) => {
+//             if (err) {
+//                 return res.status(500).send(err);
+//             }
+
+//             Assignment.findByIdAndUpdate(req.params.assignmentId, { $push: { details: savedDetail._id } }, (err) => {
+//                 if (err) {
+//                     return res.status(500).send(err);
+//                 }
+//                 res.status(200).json(savedDetail);
+//             });
+//         });
+//     });
+// }
+
 function postAssignmentDetail(req, res) {
-    let assignmentDetail = new AssignmentDetails();
-    assignmentDetail.assignment = req.params.assignmentId; 
-    assignmentDetail.auteur = req.body.auteur;
-    assignmentDetail.note = null;
-    assignmentDetail.remarque = null;
-    assignmentDetail.rendu = false;
+    const { _id, auteur, note, remarque, rendu } = req.body;
 
-    console.log("POST assignmentDetail reçu :");
-    console.log(assignmentDetail);
-
-    AssignmentDetails.findOne({ assignment: req.params.assignmentId, auteur: req.body.auteur }, (err, existingDetail) => {
-        if (err) {
-            return res.status(500).send(err);
-        }
-
-        if (existingDetail) {
-            return res.status(200).json({ message: "Vous avez déjà soumis cet assignment." });
-        }
-
-        assignmentDetail.save((err, savedDetail) => {
+    AssignmentDetails.findOneAndUpdate(
+        { _id: _id},
+        { note: note, remarque: remarque, rendu: rendu },
+        { new: true, upsert: true },
+        (err, updatedDetail) => {
             if (err) {
-                return res.status(500).send(err);
+                console.error("Une erreur s'est produite lors de la mise à jour des détails de l'assignment :", err);
+                return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour des détails de l'assignment." });
             }
-
-            Assignment.findByIdAndUpdate(req.params.assignmentId, { $push: { details: savedDetail._id } }, (err) => {
+            Assignment.findByIdAndUpdate(_id, { $push: { details: updatedDetail._id } }, (err) => {
                 if (err) {
-                    return res.status(500).send(err);
+                    console.error("Une erreur s'est produite lors de la mise à jour de l'assignment :", err);
+                    return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour de l'assignment." });
                 }
-                res.status(200).json(savedDetail);
+                console.log("Les détails de l'assignment ont été mis à jour avec succès :", updatedDetail);
+                res.status(200).json({ message: "Les détails de l'assignment ont été mis à jour avec succès.", updatedDetail });
             });
-        });
-    });
+        }
+    );
 }
+
+
 
 function updateAssignmentDetail(req, res) {
     console.log("UPDATE reçu pour les détails de l'assignment : ");

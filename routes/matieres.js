@@ -5,24 +5,65 @@ const fs = require('fs');
 
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
 
-function uploadPhotoAndGetFileName(req, res) {
+function uploadPhotoAndGetFileName(req) {
     var uploadedFile = req.files[0];
     if (!uploadedFile) {
         console.log('Fichier introuvable!');
-        return;
+        return null;
     }
     const fileName = `${uploadedFile.originalname.replace(/\s+/g, '')}_${Date.now()}`;
     const destinationPath = path.join(__dirname, '/../uploads', fileName);
-    fs.rename(uploadedFile.path, destinationPath, err => {
-        if (err) {
-            console.log('Erreur lors de l\'upload du fichier');
-            console.error(err);
-        } else {
-            console.log('Fichier uploadé avec succès !');
-        }
-    });
-    return fileName;
+    fs.renameSync(uploadedFile.path, destinationPath); 
+    console.log('Fichier uploadé avec succès ! Chemin du fichier :', destinationPath);
+    return fileName; 
 }
+
+
+function updateMatiere(req, res) {
+    const updateData = req.body;
+    Matiere.findById(req.body._id, (err, ancienneMatiere) => {
+        if (err) {
+            console.error("Erreur lors de la recherche de la matière dans la base de données :", err);
+            return res.status(500).json({ message: "Erreur lors de la recherche de la matière dans la base de données" });
+        }
+        if (!ancienneMatiere) {
+            console.log("Aucune matière trouvée avec l'ID spécifié :", req.body._id);
+            return res.status(404).json({ message: "Matière non trouvée" });
+        }
+
+        if (req.files) {
+            let photoName = uploadPhotoAndGetFileName(req, res);
+            if (photoName) {
+                updateData.photo = photoName;
+                console.log("Nouvelle photo sélectionnée :", photoName);
+            } else {
+                console.log("Aucune nouvelle photo sélectionnée.");
+            }
+        } else {
+            if (!updateData.photo) {
+                delete updateData.photo;
+                console.log("Aucune photo n'a été sélectionnée et aucune photo n'était présente dans la base de données.");
+            }
+        }
+
+        // Comparaison pour les autres champs que vous souhaitez suivre
+        if (updateData.nom !== ancienneMatiere.nom) {
+            console.log("Le nom de la matière a été modifié :", ancienneMatiere.nom, "->", updateData.nom);
+        }
+
+        Matiere.findByIdAndUpdate(req.body._id, updateData, { new: true }, (err, updatedMatiere) => {
+            if (err) {
+                console.error("Erreur lors de la mise à jour de la matière dans la base de données :", err);
+                return res.status(500).json({ message: "Erreur lors de la mise à jour de la matière dans la base de données" });
+            }
+            console.log("Matière mise à jour avec succès :", updatedMatiere);
+            res.json({ message: 'Matière mise à jour', updatedMatiere });
+        });
+    });
+}
+
+
+
 
 function getMatieres(req, res) {
     Matiere.find()
@@ -66,46 +107,7 @@ function postMatiere(req, res) {
 }
 
 
-function updateMatiere(req, res) {
-    const updateData = req.body;
-    const ancienneMatiere = Matiere.findById(req.params.id); // Supposons que vous puissiez obtenir la matière à partir de la base de données
-    if (!ancienneMatiere) {
-        console.log("Aucune matière trouvée avec l'ID spécifié :", req.params.id);
-        res.status(404).send({ message: "Matière non trouvée" });
-        return;
-    }
 
-    if (req.files) {
-        let photo = uploadPhotoAndGetFileName(req, res);
-        if (photo) {
-            updateData.photo = photo; 
-            console.log("Nouvelle photo sélectionnée :", photo);
-        } else {
-            console.log("Aucune nouvelle photo sélectionnée.");
-        }
-    } else {
-        // Si aucune nouvelle photo n'est envoyée, conserver la photo actuelle de la matière si elle existe
-        if (!updateData.photo) {
-            // Si aucune nouvelle photo n'est sélectionnée et que l'ancienne photo n'existe pas, supprimer la clé 'photo' de updateData
-            delete updateData.photo;
-            console.log("Aucune photo n'a été sélectionnée et aucune photo n'était présente dans la base de données.");
-        }
-    }
-
-    if (updateData.nom !== ancienneMatiere.nom) {
-        console.log("Le nom de la matière a été modifié :", ancienneMatiere.nom, "->", updateData.nom);
-    }
-
-    // Autres comparaisons pour les champs que vous souhaitez suivre...
-
-    Matiere.findByIdAndUpdate(req.params.id, updateData, { new: true }, (err, updatedMatiere) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json({ message: 'Matière mise à jour', updatedMatiere });
-        }
-    });
-}
 
 
 
