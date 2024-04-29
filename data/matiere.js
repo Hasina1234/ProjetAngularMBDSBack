@@ -6,13 +6,13 @@ mongoose.connect('mongodb+srv://master:masterM2@cluster0.zpspipp.mongodb.net/ass
   .catch(err => console.error('Erreur de connexion à MongoDB :', err));
 
 
-const idProfesseur = "660d5511c8711c4548f373eb";
+const idProfesseur = "660ed04cecfd160b08f8fb7d";
 
 const insererMatiere = async () => {
   try {
     const nouvelleMatiere = new Matiere({
-      nom: 'Hadoop',
-      photo: null,
+      nom: 'Oracle',
+      photo: 'oracle.png',
       prof: idProfesseur 
     });
     await nouvelleMatiere.save();
