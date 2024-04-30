@@ -4,42 +4,48 @@ let Assignments = require('../model/assignment');
 let AssignmentDetails = require('../model/assignmentDetails');
 const path = require('path');
 const fs = require('fs');
-
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
+const multer = require('multer');
+const upload = multer({
+    dest: 'uploads/'
+});
 
 
-function supprimerMatiereByMatiereId(req, res) {
-    const matiereId = req.body._id;
-    res.status(200).send({ message: 'Matière supprimée avec succès.', data: req.body });
-
-
-    // AssignmentDetails.deleteMany({ assignment: { $in: await Assignments.find({ matiere: matiereId }) } }, (err) => {
-    //     if (err) {
-    //         return res.status(500).send({ message: 'Erreur lors de la suppression des AssignmentDetails.', error: err });
-    //     }
-
-    //     res.status(200).send({ message: 'AssignmentDetails supprimés avec succès.' });
-
-    //     Assignments.deleteMany({ matiere: matiereId }, (err) => {
-    //         if (err) {
-    //             return res.status(500).send({ message: 'Erreur lors de la suppression des Assignments.', error: err });
-    //         }
-
-    //         res.status(200).send({ message: 'Assignments supprimés avec succès.' });
-
-    //         Matiere.findByIdAndDelete(matiereId, (err, deletedMatiere) => {
-    //             if (err) {
-    //                 return res.status(500).send({ message: 'Erreur lors de la suppression de la matière.', error: err });
-    //             }
-    //             if (!deletedMatiere) {
-    //                 return res.status(404).json({ message: 'Matière non trouvée.' });
-    //             }
-
-    //             res.json({ message: `${deletedMatiere.nom} supprimée avec succès` });
-    //         });
-    //     });
-    // });
+function postMatiere(req, res) {
+    console.log("Clés des données FormData :", Object.keys(req.body));
+    console.log("Clés des données FormData :", Object.keys(req.files));
+    let photo;
+    if (req.files && req.files[0]) {
+        console.log("Fichier téléchargé");
+        photo = req.files[0].filename;
+        if (!photo) {
+            console.log("Erreur lors du téléchargement de la photo");
+            return res.status(500).send('Erreur lors du téléchargement de la photo');
+        }
+        console.log("Photo téléchargée :", photo);
+    }
+  
+    const { nom, prof } = req.body;
+  
+    console.log("Données du formulaire :", nom, prof, photo);
+  
+    const matiere = new Matiere({ nom, prof });
+    if (photo) {
+        matiere.photo = photo;
+    }
+  
+    matiere.save((err) => {
+        if (err) {
+            console.log("Erreur lors de l'enregistrement de la matière:", err);
+            return res.status(500).send(err);
+        }
+        console.log("Matière enregistrée avec succès:", `${matiere.nom} enregistré!`);
+        res.json({ message: `${matiere.nom} enregistré!` });
+    });
 }
+
+
+
 
 
 function uploadPhotoAndGetFileName(req) {
@@ -144,42 +150,92 @@ function getMatiereById(req, res) {
 // }
 // 
 
-function postMatiere(req, res) {
-    if (!req.files || !req.files[0]) {
-        return res.status(400).send('Aucun fichier téléchargé');
-    }
-
-    const photo = uploadPhotoAndGetFileName(req);
-    if (!photo) {
-        return res.status(500).send('Erreur lors du téléchargement de la photo');
-    }
-
-    const matiere = new Matiere(req.body);
-    matiere.photo = photo;
-
-    matiere.save((err) => {
-        if (err) {
-            return res.status(500).send(err);
-        }
-        res.json({ message: `${matiere.nom} enregistré!` });
-    });
-}
-
-
 
 
 
 
 
 function deleteMatiere(req, res) {
-    Matiere.findByIdAndRemove(req.body._id, (err, deletedMatiere) => {
+    const matiereId = req.body._id;
+
+    // Étape 1 : Trouver tous les assignments associés à la matière
+    Assignments.find({ matiere: matiereId }, (err, assignments) => {
         if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json({ message: `${deletedMatiere.nom} deleted` });
+            return res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des assignments associés à la matière." });
         }
+
+        // Étape 2 : Si aucun assignment n'est trouvé, passer directement à l'étape 4
+        if (assignments.length === 0) {
+            return deleteMatiereAndRespond(matiereId, res);
+        }
+
+        // Étape 3 : Pour chaque assignment, trouver et supprimer les assignmentDetails associés
+        let assignmentsDeleted = 0;
+        assignments.forEach((assignment) => {
+            AssignmentDetails.deleteMany({ assignment: assignment._id }, (err) => {
+                if (err) {
+                    return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression des assignmentDetails associés à l'assignment." });
+                }
+
+                // Marquer l'assignment comme supprimé
+                assignmentsDeleted++;
+
+                // Si tous les assignments ont été traités, passer à l'étape 4
+                if (assignmentsDeleted === assignments.length) {
+                    deleteMatiereAndRespond(matiereId, res);
+                }
+            });
+        });
     });
 }
+
+function deleteMatiereAndRespond(matiereId, res) {
+    // Étape 4 : Supprimer la matière elle-même
+    Matiere.findByIdAndDelete(matiereId, (err) => {
+        if (err) {
+            return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression de la matière." });
+        }
+        res.status(200).json({ message: "La matière et ses assignments associés ont été supprimés avec succès." });
+    });
+}
+
+
+
+// function deleteMatiere(req, res) {
+//     // console.log("La fonction deleteMatiere a été appelée.",req.body); 
+//     const matiereId = req.body._id; // supposons que l'ID de la matière à supprimer soit passé dans les paramètres de la requête
+
+//     // Étape 1 : Trouver tous les assignments associés à la matière
+//     Assignments.find({ matiere: matiereId }, (err, assignments) => {
+//         if (err) {
+//             return res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des assignments associés à la matière." });
+//         }
+
+//         // Étape 2 : Pour chaque assignment, trouver et supprimer les assignmentDetails associés
+//         assignments.forEach((assignment) => {
+//             AssignmentDetails.deleteMany({ assignment: assignment._id }, (err) => {
+//                 if (err) {
+//                     return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression des assignmentDetails associés à l'assignment." });
+//                 }
+
+//                 // Étape 3 : Supprimer l'assignment
+//                 Assignment.findByIdAndDelete(assignment._id, (err) => {
+//                     if (err) {
+//                         return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression de l'assignment." });
+//                     }
+//                 });
+//             });
+//         });
+
+//         // Étape 4 : Supprimer la matière elle-même
+//         Matiere.findByIdAndDelete(matiereId, (err) => {
+//             if (err) {
+//                 return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression de la matière." });
+//             }
+//             res.status(200).json({ message: "La matière et ses assignments associés ont été supprimés avec succès." });
+//         });
+//     });
+// }
 
 
 function getMatiereByProf(req, res) {
@@ -198,4 +254,4 @@ function getMatiereByProf(req, res) {
 
 
 
-module.exports = { getMatiereById, getMatieres, postMatiere, updateMatiere, deleteMatiere, getMatiereByProf ,supprimerMatiereByMatiereId };
+module.exports = { getMatiereById, getMatieres, postMatiere, updateMatiere, deleteMatiere, getMatiereByProf };

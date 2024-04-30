@@ -1,4 +1,8 @@
 let express = require('express');
+let Matiere = require('./model/matieres');
+let Utilisateur = require('./model/utilisateurs');
+let Assignments = require('./model/assignment');
+let AssignmentDetails = require('./model/assignmentDetails');
 let app = express();
 let bodyParser = require('body-parser');
 let assignment = require('./routes/assignments');
@@ -35,16 +39,12 @@ mongoose.connect(uri, options)
 
 
 
-// Pour les formulaires
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 let port = process.env.PORT || 8010;
-
-// les routes
 const prefix = '/api';
 
-// http://serveur..../utilisateurs
 app.route(prefix + '/utilisateurs')
   .get(utilisateur_routes.getUtilisateurs)
   .put(upload.any(),utilisateur_routes.updateUtilisateur);
@@ -60,7 +60,6 @@ app.post(prefix + '/utilisateurs/inscription',utilisateur_routes.s_inscrire);
 app.route(prefix + '/utilisateurs/:id').get(utilisateur_routes.getUtilisateurById)
 app.route(prefix + '/utilisateurs/getListeMatiere/:id').get(utilisateur_routes.getListeMatiere);
 
-// http://serveur..../assignments
 app.route(prefix + '/assignments')
   .post(assignment.postAssignment)
   .put(assignment.updateAssignment)
@@ -74,9 +73,7 @@ app.route(prefix + '/assignments/RenduEleve/:id').get(assignment.getAssignmentsR
 app.route(prefix + '/assignments/NonRenduEleve/:id').get(assignment.getAssignmentsNonRenduEleve);
 app.route(prefix + '/assignments/byMatiere/:matiereId/:profId').get(assignment.getAssignmentsByMatiereAndProf);
 
-// http://serveur...../matieres
 app.route(prefix + '/matieres')
-  .post(matieres.postMatiere)
   .get(matieres.getMatieres)
   .put(upload.any(),matieres.updateMatiere);
 
@@ -84,7 +81,10 @@ app.route(prefix + '/matieres/:id')
   .get(matieres.getMatiereById);
 
 app.route(prefix + '/matieres/byProf/:idProf').get(matieres.getMatiereByProf);
-app.route(prefix + '/matieres/supprimer').delete(matieres.supprimerMatiereByMatiereId);
+app.route(prefix + '/matieres/supprimer').delete(matieres.deleteMatiere);
+app.post(prefix + '/matieres/ajouter', upload.any(), matieres.postMatiere);
+
+
 
 // http://serveur...../assignmentDetails
 app.route(prefix + '/assignmentDetails')
