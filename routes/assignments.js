@@ -1,4 +1,5 @@
 let Assignment = require('../model/assignment');
+const assignmentDetails = require('../model/assignmentDetails');
 
 function getAssignments(req, res){
     let aggregateQuery = Assignment.aggregate();
@@ -64,13 +65,18 @@ function updateAssignment(req, res) {
 }
 
 function deleteAssignment(req, res) {
-
-    Assignment.findByIdAndRemove(req.params.id, (err, assignment) => {
+    const assignmentId = req.params.id;
+    assignmentDetails.deleteMany({ assignment: assignmentId }, (err, result) => {
         if (err) {
-            res.send(err);
+            return res.status(500).send(err);
         }
-        res.json({message: `${assignment.nom} deleted`});
-    })
+        Assignment.findByIdAndRemove(assignmentId, (err, assignment) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+            res.json({ message: `${assignment.nom} deleted` });
+        });
+    });
 }
 
 function getAssignmentsRenduEleve(req, res) {
@@ -128,7 +134,8 @@ function getAssignmentsByMatiereAndProf(req, res) {
     })
     .populate({
         path: 'matiere',
-        match: { prof: profId }
+        match: { prof: profId },
+        populate: 'prof'
     })
     .exec((err, assignments) => {
         if (err) {
