@@ -1,9 +1,46 @@
 let Matiere = require('../model/matieres');
 let Utilisateur = require('../model/utilisateurs');
+let Assignments = require('../model/assignment');
+let AssignmentDetails = require('../model/assignmentDetails');
 const path = require('path');
 const fs = require('fs');
 
 const UPLOAD_PATH = path.join(__dirname, '../uploads');
+
+
+function supprimerMatiereByMatiereId(req, res) {
+    const matiereId = req.body._id;
+    res.status(200).send({ message: 'Matière supprimée avec succès.', data: req.body });
+
+
+    // AssignmentDetails.deleteMany({ assignment: { $in: await Assignments.find({ matiere: matiereId }) } }, (err) => {
+    //     if (err) {
+    //         return res.status(500).send({ message: 'Erreur lors de la suppression des AssignmentDetails.', error: err });
+    //     }
+
+    //     res.status(200).send({ message: 'AssignmentDetails supprimés avec succès.' });
+
+    //     Assignments.deleteMany({ matiere: matiereId }, (err) => {
+    //         if (err) {
+    //             return res.status(500).send({ message: 'Erreur lors de la suppression des Assignments.', error: err });
+    //         }
+
+    //         res.status(200).send({ message: 'Assignments supprimés avec succès.' });
+
+    //         Matiere.findByIdAndDelete(matiereId, (err, deletedMatiere) => {
+    //             if (err) {
+    //                 return res.status(500).send({ message: 'Erreur lors de la suppression de la matière.', error: err });
+    //             }
+    //             if (!deletedMatiere) {
+    //                 return res.status(404).json({ message: 'Matière non trouvée.' });
+    //             }
+
+    //             res.json({ message: `${deletedMatiere.nom} supprimée avec succès` });
+    //         });
+    //     });
+    // });
+}
+
 
 function uploadPhotoAndGetFileName(req) {
     var uploadedFile = req.files[0];
@@ -89,20 +126,42 @@ function getMatiereById(req, res) {
     });
 }
 
+// function postMatiere(req, res) {
+//     let photo = uploadPhotoAndGetFileName(req, res);
+//     let matiere = new Matiere(req.body);
+//     if (!photo) {
+//         return res.status(400).send('Aucun fichier téléchargé');
+//     }
+//     matiere.photo = null;
+//     matiere.photo = photo;
+//     matiere.save((err) => {
+//         if (err) {
+//             res.status(500).send(err);
+//         } else {
+//             res.json({ message: `${matiere.nom} enregistré!` });
+//         }
+//     });
+// }
+// 
+
 function postMatiere(req, res) {
-    // let photo = uploadPhotoAndGetFileName(req, res);
-    let matiere = new Matiere(req.body);
-    // if (!photo) {
-    //     return res.status(400).send('Aucun fichier téléchargé');
-    // }
-    matiere.photo = null;
-    // matiere.photo = photo;
+    if (!req.files || !req.files[0]) {
+        return res.status(400).send('Aucun fichier téléchargé');
+    }
+
+    const photo = uploadPhotoAndGetFileName(req);
+    if (!photo) {
+        return res.status(500).send('Erreur lors du téléchargement de la photo');
+    }
+
+    const matiere = new Matiere(req.body);
+    matiere.photo = photo;
+
     matiere.save((err) => {
         if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json({ message: `${matiere.nom} enregistré!` });
+            return res.status(500).send(err);
         }
+        res.json({ message: `${matiere.nom} enregistré!` });
     });
 }
 
@@ -111,8 +170,9 @@ function postMatiere(req, res) {
 
 
 
+
 function deleteMatiere(req, res) {
-    Matiere.findByIdAndRemove(req.params.id, (err, deletedMatiere) => {
+    Matiere.findByIdAndRemove(req.body._id, (err, deletedMatiere) => {
         if (err) {
             res.status(500).send(err);
         } else {
@@ -133,4 +193,9 @@ function getMatiereByProf(req, res) {
     });
 }
 
-module.exports = { getMatiereById, getMatieres, postMatiere, updateMatiere, deleteMatiere, getMatiereByProf };
+
+
+
+
+
+module.exports = { getMatiereById, getMatieres, postMatiere, updateMatiere, deleteMatiere, getMatiereByProf ,supprimerMatiereByMatiereId };

@@ -81,10 +81,10 @@ app.route(prefix + '/matieres')
   .put(upload.any(),matieres.updateMatiere);
 
 app.route(prefix + '/matieres/:id')
-  .get(matieres.getMatiereById)
-  .delete(matieres.deleteMatiere);
+  .get(matieres.getMatiereById);
 
 app.route(prefix + '/matieres/byProf/:idProf').get(matieres.getMatiereByProf);
+app.route(prefix + '/matieres/supprimer').delete(matieres.supprimerMatiereByMatiereId);
 
 // http://serveur...../assignmentDetails
 app.route(prefix + '/assignmentDetails')
