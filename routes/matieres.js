@@ -150,44 +150,119 @@ function getMatiereById(req, res) {
 // }
 // 
 
+// function deleteMatiere(req, res) {
+//     const matiereId = req.body._id;
 
+//     Assignments.find({ matiere: matiereId }, (err, assignments) => {
+//         if (err) {
+//             return res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des assignments associés à la matière." });
+//         }
 
+//         if (assignments.length > 0) {
+//             console.log("Assignments trouvés :", assignments);
 
+//             // Pour chaque assignment trouvé, rechercher les detailsAssignment associés
+//             assignments.forEach((assignment) => {
+//                 AssignmentDetails.find({ assignment: assignment._id }, (err, detailsAssignments) => {
+//                     if (err) {
+//                         return res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des detailsAssignment associés à l'assignment." });
+//                     }
 
+//                     console.log("DetailsAssignment associés à l'assignment", assignment._id, ":", detailsAssignments);
+//                 });
+//             });
+//         } else {
+//             console.log("Aucun assignment associé à la matière.");
+//         }
+//     });
+// }
 
 function deleteMatiere(req, res) {
     const matiereId = req.body._id;
 
-    // Étape 1 : Trouver tous les assignments associés à la matière
+    // Trouver tous les assignments associés à la matière
     Assignments.find({ matiere: matiereId }, (err, assignments) => {
         if (err) {
             return res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des assignments associés à la matière." });
         }
 
-        // Étape 2 : Si aucun assignment n'est trouvé, passer directement à l'étape 4
-        if (assignments.length === 0) {
-            return deleteMatiereAndRespond(matiereId, res);
+        // Si des assignments sont trouvés
+        if (assignments.length > 0) {
+            console.log("Assignments trouvés :", assignments);
+
+            // Supprimer les detailsAssignments associés à chaque assignment
+            assignments.forEach((assignment) => {
+                AssignmentDetails.deleteMany({ assignment: assignment._id }, (err) => {
+                    if (err) {
+                        return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression des detailsAssignment associés à l'assignment." });
+                    }
+
+                    console.log("DetailsAssignment associés à l'assignment", assignment._id, "supprimés avec succès.");
+                });
+
+                // Supprimer l'assignment lui-même
+                Assignments.findByIdAndDelete(assignment._id, (err) => {
+                    if (err) {
+                        return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression de l'assignment." });
+                    }
+
+                    console.log("Assignment", assignment._id, "supprimé avec succès.");
+                });
+            });
+        } else {
+            console.log("Aucun assignment associé à la matière.");
         }
 
-        // Étape 3 : Pour chaque assignment, trouver et supprimer les assignmentDetails associés
-        let assignmentsDeleted = 0;
-        assignments.forEach((assignment) => {
-            AssignmentDetails.deleteMany({ assignment: assignment._id }, (err) => {
-                if (err) {
-                    return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression des assignmentDetails associés à l'assignment." });
-                }
+        // Supprimer la matière elle-même
+        Matiere.findByIdAndDelete(matiereId, (err) => {
+            if (err) {
+                return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression de la matière." });
+            }
 
-                // Marquer l'assignment comme supprimé
-                assignmentsDeleted++;
-
-                // Si tous les assignments ont été traités, passer à l'étape 4
-                if (assignmentsDeleted === assignments.length) {
-                    deleteMatiereAndRespond(matiereId, res);
-                }
-            });
+            console.log("Matière", matiereId, "supprimée avec succès.");
+            res.status(200).json({ message: "La matière et ses assignments associés ont été supprimés avec succès." });
         });
     });
 }
+
+
+
+
+
+
+// function deleteMatiere(req, res) {
+//     const matiereId = req.body._id;
+
+//     // Étape 1 : Trouver tous les assignments associés à la matière
+//     Assignments.find({ matiere: matiereId }, (err, assignments) => {
+//         if (err) {
+//             return res.status(500).json({ message: "Une erreur s'est produite lors de la recherche des assignments associés à la matière." });
+//         }
+
+//         // Étape 2 : Si aucun assignment n'est trouvé, passer directement à l'étape 4
+//         if (assignments.length === 0) {
+//             return deleteMatiereAndRespond(matiereId, res);
+//         }
+
+//         // Étape 3 : Pour chaque assignment, trouver et supprimer les assignmentDetails associés
+//         let assignmentsDeleted = 0;
+//         assignments.forEach((assignment) => {
+//             AssignmentDetails.deleteMany({ assignment: assignment._id }, (err) => {
+//                 if (err) {
+//                     return res.status(500).json({ message: "Une erreur s'est produite lors de la suppression des assignmentDetails associés à l'assignment." });
+//                 }
+
+//                 // Marquer l'assignment comme supprimé
+//                 assignmentsDeleted++;
+
+//                 // Si tous les assignments ont été traités, passer à l'étape 4
+//                 if (assignmentsDeleted === assignments.length) {
+//                     deleteMatiereAndRespond(matiereId, res);
+//                 }
+//             });
+//         });
+//     });
+// }
 
 function deleteMatiereAndRespond(matiereId, res) {
     // Étape 4 : Supprimer la matière elle-même
