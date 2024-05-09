@@ -72,6 +72,7 @@ app.route(prefix + '/assignments/:id')
 app.route(prefix + '/assignments/RenduEleve/:id').get(assignment.getAssignmentsRenduEleve);
 app.route(prefix + '/assignments/NonRenduEleve/:id').get(assignment.getAssignmentsNonRenduEleve);
 app.route(prefix + '/assignments/byMatiere/:matiereId/:profId').get(assignment.getAssignmentsByMatiereAndProf);
+app.route(prefix + '/assignments/eleve/byMatiere/:matiereId/:auteurId').get(assignment.getAssignmentsEleveByMatiere);
 
 app.route(prefix + '/matieres')
   .get(matieres.getMatieres)
@@ -95,6 +96,8 @@ app.route(prefix + '/assignmentDetails')
 app.route(prefix + '/assignmentDetails/:id')
   .get(assignmentDetails.getAssignmentDetailById)
   .delete(assignmentDetails.deleteAssignmentDetail);
+
+app.route(prefix + '/assignmentsDetails/new').post(assignmentDetails.newAssignmentDetail);
 
 app.route(prefix + '/assignmentsDetails/RenduProf/:id').get(assignmentDetails.getAssignmentsRenduProf);
 app.route(prefix + '/assignmentsDetails/NonRenduProf/:id').get(assignmentDetails.getAssignmentsNonRenduProf);

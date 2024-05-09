@@ -7,14 +7,16 @@ mongoose.connect('mongodb+srv://master:masterM2@cluster0.zpspipp.mongodb.net/ass
   .then(() => console.log('Connexion à MongoDB réussie'))
   .catch(err => console.error('Erreur de connexion à MongoDB :', err));
 
-const idAssignment = "660eccb5c8ab0c19fcda0cf3";
+const idAssignment = "6639e0123c6921370441cdb2";
 
 const idAuteur1 = "660d54eec8711c4548f373e6";
 const idAuteur2 = "660ec6765356470a8068b593";
 const idAuteur3 = "660ecfd905f2c30758f0b205";
 
 const details = [
-  { assignment: idAssignment, auteur: idAuteur2, note: null, remarque: null, rendu: false}
+  { assignment: idAssignment, auteur: idAuteur1, note: null, remarque: null, rendu: false},
+  { assignment: idAssignment, auteur: idAuteur2, note: null, remarque: null, rendu: false},
+  { assignment: idAssignment, auteur: idAuteur3, note: null, remarque: null, rendu: false}
 ];
 
 AssignmentDetail.insertMany(details)

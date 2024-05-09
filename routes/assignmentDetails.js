@@ -126,6 +126,38 @@ function getAssignmentsNonRenduProf(req, res) {
         });
 }
 
+function newAssignmentDetail(req, res) {
+    const { assignmentId, auteurId, note, remarque, rendu } = req.body;
+
+    // Créer un nouveau assignmentDetail
+    const newAssignmentDetail = new AssignmentDetails({
+        assignment: assignmentId,
+        auteur: auteurId,
+        note: note,
+        remarque: remarque,
+        rendu: rendu
+    });
+
+    // Sauvegarder le nouveau assignmentDetail dans la base de données
+    newAssignmentDetail.save()
+        .then((createdDetail) => {
+            // Mettre à jour l'assignment correspondant pour inclure le nouveau detail
+            Assignment.findByIdAndUpdate(assignmentId, { $push: { details: createdDetail._id } })
+                .then(() => {
+                    console.log('Détail d\'assignment ajouté avec succès à l\'assignment.');
+                    res.status(200).json({ message: "Détail d'assignment ajouté avec succès à l'assignment.", createdDetail });
+                })
+                .catch(err => {
+                    console.error("Une erreur s'est produite lors de la mise à jour de l'assignment :", err);
+                    res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour de l'assignment." });
+                });
+        })
+        .catch(err => {
+            console.error("Une erreur s'est produite lors de la création du détail d'assignment :", err);
+            res.status(500).json({ message: "Une erreur s'est produite lors de la création du détail d'assignment." });
+        });
+}
+
 module.exports = { 
     getAssignmentDetails, 
     postAssignmentDetail, 
@@ -133,5 +165,6 @@ module.exports = {
     updateAssignmentDetail, 
     deleteAssignmentDetail,
     getAssignmentsRenduProf,
-    getAssignmentsNonRenduProf
+    getAssignmentsNonRenduProf,
+    newAssignmentDetail
 };

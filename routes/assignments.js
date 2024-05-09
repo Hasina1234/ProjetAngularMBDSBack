@@ -88,7 +88,12 @@ function getAssignmentsRenduEleve(req, res) {
                 auteur: auteurId
             }
         })
-        .populate('matiere')
+        .populate({
+            path: 'matiere',
+            populate: {
+                path: 'prof'
+            }
+        })
         .exec((err, assignments) => {
             if (err) {
                 return res.status(500).send(err);
@@ -107,7 +112,12 @@ function getAssignmentsNonRenduEleve(req, res) {
                 auteur: auteurId
             }
         })
-        .populate('matiere')
+        .populate({
+            path: 'matiere',
+            populate: {
+                path: 'prof'
+            }
+        })
         .exec((err, assignments) => {
             if (err) {
                 return res.status(500).send(err);
@@ -145,6 +155,30 @@ function getAssignmentsByMatiereAndProf(req, res) {
     });
 }
 
+function getAssignmentsEleveByMatiere(req, res) {
+    const auteurId = req.params.auteurId; 
+    const matiereId = req.params.matiereId; // Ajout de la récupération de l'ID de la matière
+
+    Assignment.find({ matiere: matiereId }) // Filtrer par l'ID de la matière
+        .populate({
+            path: 'details',
+            match: {
+                auteur: auteurId
+            }
+        })
+        .populate('matiere')
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+
+            
+
+            res.json(assignments);
+    });
+}
+
+
 
 
 
@@ -156,5 +190,6 @@ module.exports = {
     deleteAssignment,
     getAssignmentsRenduEleve,
     getAssignmentsNonRenduEleve,
-    getAssignmentsByMatiereAndProf
+    getAssignmentsByMatiereAndProf,
+    getAssignmentsEleveByMatiere
 };
