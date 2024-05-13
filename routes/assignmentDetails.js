@@ -90,41 +90,66 @@ function getAssignmentDetailById(req, res) {
 
 function getAssignmentsRenduProf(req, res) {
     const matiereId = req.params.id;
-    AssignmentDetails.find({ rendu: true })
+    const profId = req.params.idp;
+    AssignmentDetails.find({})
         .populate({
             path: 'assignment',
-            match: {
-                matiere: matiereId
-            },
-            populate: { path: 'matiere' }
+            populate: {
+                path: 'matiere',
+                match: {
+                    _id: matiereId,
+                    prof: profId
+                }
+            }
         })
         .populate('auteur')
         .exec((err, assignments) => {
             if (err) {
                 return res.status(500).send(err);
             }
-            res.json(assignments);
+
+            const filteredAssignments = assignments.filter(assignment => assignment.rendu === true);
+            
+            const filteredResult = filteredAssignments.filter(assignment => assignment.assignment.matiere);
+            if (filteredResult.length === 0) {
+                return res.json([]);
+            }
+
+            res.json(filteredAssignments);
         });
 }
 
+
+
+
 function getAssignmentsNonRenduProf(req, res) {
     const matiereId = req.params.id;
+    const profId = req.params.idp;
     AssignmentDetails.find({ rendu: false })
         .populate({
             path: 'assignment',
             match: {
                 matiere: matiereId
             },
-            populate: { path: 'matiere' }
+            populate: {
+                path: 'matiere',
+                match: {
+                    prof: profId
+                }
+            }
         })
         .populate('auteur')
         .exec((err, assignments) => {
             if (err) {
                 return res.status(500).send(err);
             }
-            res.json(assignments);
+            
+            const filteredAssignments = assignments.filter(assignment => assignment.assignment !== null);
+            
+            res.json(filteredAssignments);
         });
 }
+
 
 function newAssignmentDetail(req, res) {
     const { assignmentId, auteurId, note, remarque, rendu } = req.body;
