@@ -88,6 +88,64 @@ function getAssignmentDetailById(req, res) {
         });
 }
 
+function getAssignmentsRenduParDevoirProf(req, res) {
+    const idAssignment = req.params.id;
+    const profId = req.params.idp;
+    console.log('idassignment: ', idAssignment);
+    console.log('idprof: ', profId);
+    AssignmentDetails.find({ assignment: idAssignment, rendu: true })
+        .populate({
+            path: 'assignment',
+            populate: {
+                path: 'matiere',
+                match: {
+                    prof: profId
+                }
+            }
+        })
+        .populate('auteur')
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+
+            const filteredResult = assignments.filter(assignment => assignment.assignment);
+
+            if (filteredResult.length === 0) {
+                return res.json([]);
+            }
+
+            res.json(assignments);
+        });
+}
+
+function getAssignmentsNonRenduParDevoirProf(req, res) {
+    const idAssignment = req.params.id;
+    const profId = req.params.idp;
+
+    AssignmentDetails.find({ assignment: idAssignment, rendu: false })
+        .populate({
+            path: 'assignment',
+            populate: {
+                path: 'matiere',
+                match: {
+                    prof: profId
+                }
+            }
+        })
+        .populate('auteur')
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+            
+            const filteredAssignments = assignments.filter(assignment => assignment.assignment !== null);
+            
+            res.json(filteredAssignments);
+        });
+}
+
+
 function getAssignmentsRenduProf(req, res) {
     const matiereId = req.params.id;
     const profId = req.params.idp;
@@ -115,7 +173,7 @@ function getAssignmentsRenduProf(req, res) {
                 return res.json([]);
             }
 
-            res.json(filteredAssignments);
+            res.json(filteredResult);
         });
 }
 
@@ -191,5 +249,7 @@ module.exports = {
     deleteAssignmentDetail,
     getAssignmentsRenduProf,
     getAssignmentsNonRenduProf,
-    newAssignmentDetail
+    newAssignmentDetail,
+    getAssignmentsNonRenduParDevoirProf,
+    getAssignmentsRenduParDevoirProf
 };

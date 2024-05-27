@@ -101,6 +101,8 @@ app.route(prefix + '/assignmentsDetails/new').post(assignmentDetails.newAssignme
 
 app.route(prefix + '/assignmentsDetails/RenduProf/:id/:idp').get(assignmentDetails.getAssignmentsRenduProf);
 app.route(prefix + '/assignmentsDetails/NonRenduProf/:id/:idp').get(assignmentDetails.getAssignmentsNonRenduProf);
+app.route(prefix + '/assignmentsDetails/DevoirRenduProf/:id/:idp').get(assignmentDetails.getAssignmentsRenduParDevoirProf);
+app.route(prefix + '/assignmentsDetails/DevoirNonRenduProf/:id/:idp').get(assignmentDetails.getAssignmentsNonRenduParDevoirProf);
 
 // mise en cache
 const staticOptions = {

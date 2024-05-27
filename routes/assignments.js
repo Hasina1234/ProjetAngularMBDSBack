@@ -24,6 +24,7 @@ function getAssignmentById(req, res) {
     let assignmentId = req.params.id;
     Assignment.findById(assignmentId)
         .populate('details')
+        .populate('matiere')
         .exec((err, assignment) => {
             if (err) {
                 res.status(500).send(err);
