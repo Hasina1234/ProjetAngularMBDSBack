@@ -140,21 +140,38 @@ function getAssignmentsByMatiereAndProf(req, res) {
     const matiereId = req.params.matiereId;
     const profId = req.params.profId;
 
-    Assignment.find({
-        matiere: matiereId
-    })
-    .populate({
-        path: 'matiere',
-        match: { prof: profId },
-        populate: 'prof'
-    })
-    .exec((err, assignments) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+
+    Assignment.countDocuments({ matiere: matiereId })
+    .exec((err, totalCount) => {
         if (err) {
             return res.status(500).send(err);
         }
-        res.json(assignments);
+
+        Assignment.find({ matiere: matiereId })
+        .populate({
+            path: 'matiere',
+            match: { prof: profId },
+            populate: 'prof'
+        })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec((err, assignments) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+
+            res.json({
+                total: totalCount,
+                page: page,
+                pages: Math.ceil(totalCount / limit),
+                assignments: assignments
+            });
+        });
     });
 }
+
 
 function getAssignmentsEleveByMatiere(req, res) {
     const auteurId = req.params.auteurId; 
