@@ -80,6 +80,29 @@ function getUtilisateurs(req, res) {
     });
 }
 
+
+function getListeProf(req, res) {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+
+    Utilisateur.find({role: 0}).countDocuments().exec((err, totalCount) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+
+        Utilisateur.find({role: 0})
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec((err, utilisateurs) => {
+                if (err) {
+                    res.status(500).send(err);
+                } else {
+                    res.json({ total: totalCount, page: page, pages: Math.ceil(totalCount / limit), utilisateurs });
+                }
+            });
+    });
+}
+
 function getUtilisateurById(req, res) {
     let utilisateurId = req.params.id;
     Utilisateur.findById(utilisateurId, (err, utilisateur) => {
@@ -90,6 +113,8 @@ function getUtilisateurById(req, res) {
         }
     });
 }
+
+
 
 function postUtilisateur(req, res) {
     // let photo = uploadPhotoAndGetFileName(req, res);
@@ -205,4 +230,4 @@ async function getListeMatiere(req, res) {
 }
 
 
-module.exports = { getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur,se_connecter,s_inscrire,getListeMatiere };
+module.exports = { getListeProf,getUtilisateurs, getUtilisateurById, postUtilisateur, updateUtilisateur, deleteUtilisateur,se_connecter,s_inscrire,getListeMatiere };

@@ -50,6 +50,7 @@ app.route(prefix + '/utilisateurs')
   .put(upload.any(),utilisateur_routes.updateUtilisateur);
 
 app.route(prefix + '/utilisateurs/modifierUtilisateur').put(upload.any(),utilisateur_routes.updateUtilisateur);
+app.route(prefix + '/utilisateurs/listeprof').get(utilisateur_routes.getListeProf);
 
 app.route(prefix + '/utilisateurs/:id')
   .get(utilisateur_routes.getUtilisateurById)
