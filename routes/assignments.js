@@ -174,27 +174,64 @@ function getAssignmentsByMatiereAndProf(req, res) {
 
 
 function getAssignmentsEleveByMatiere(req, res) {
-    const auteurId = req.params.auteurId; 
-    const matiereId = req.params.matiereId; // Ajout de la récupération de l'ID de la matière
+    const auteurId = req.params.auteurId;
+    const matiereId = req.params.matiereId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    Assignment.find({ matiere: matiereId }) // Filtrer par l'ID de la matière
+    Assignment.countDocuments({ matiere: matiereId, 'details.auteur': auteurId })
+        .then(totalCount => {
+            return Assignment.find({ matiere: matiereId })
+                .populate({
+                    path: 'details',
+                    match: { auteur: auteurId }
+                })
+                .populate('matiere')
+                .skip(skip)
+                .limit(limit)
+                .then(assignments => {
+                    res.json({
+                        page,
+                        limit,
+                        totalCount,
+                        results: assignments
+                    });
+                });
+        })
+        .catch(err => {
+            res.status(500).send(err);
+        });
+}
+
+
+
+
+function getInformationAssignmentDetailByEleve(req, res) {
+    const assignmentId = req.params.ida; // Récupération de l'ID de l'assignment
+    const eleveId = req.params.idu; // Supposons que l'ID de l'élève soit aussi passé en paramètre
+
+    // Chercher l'Assignment avec l'ID fourni
+    Assignment.findById(assignmentId)
         .populate({
             path: 'details',
-            match: {
-                auteur: auteurId
-            }
+            match: { rendu: true, auteur: eleveId } // Filtrer les details où 'rendu' est true et 'auteur' correspond à 'eleveId'
         })
-        .populate('matiere')
-        .exec((err, assignments) => {
+        .exec((err, assignment) => {
             if (err) {
                 return res.status(500).send(err);
             }
-
-            
-
-            res.json(assignments);
-    });
+            if (!assignment) {
+                return res.status(404).send({ message: "Assignment not found" });
+            }
+            // Vérifier si les details ne sont pas vides
+            if (assignment.details.length === 0) {
+                return res.status(404).send({ message: "No details found for this student or none have been submitted" });
+            }
+            res.json(assignment.details[0] || null); // Envoyer les details filtrés
+        });
 }
+
 
 
 
@@ -209,5 +246,6 @@ module.exports = {
     getAssignmentsRenduEleve,
     getAssignmentsNonRenduEleve,
     getAssignmentsByMatiereAndProf,
-    getAssignmentsEleveByMatiere
+    getAssignmentsEleveByMatiere,
+    getInformationAssignmentDetailByEleve
 };

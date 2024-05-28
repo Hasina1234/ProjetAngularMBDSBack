@@ -105,6 +105,9 @@ app.route(prefix + '/assignmentsDetails/NonRenduProf/:id/:idp').get(assignmentDe
 app.route(prefix + '/assignmentsDetails/DevoirRenduProf/:id/:idp').get(assignmentDetails.getAssignmentsRenduParDevoirProf);
 app.route(prefix + '/assignmentsDetails/DevoirNonRenduProf/:id/:idp').get(assignmentDetails.getAssignmentsNonRenduParDevoirProf);
 
+app.route(prefix + '/assignmentsDetails/information/:idu/:ida').get(assignment.getInformationAssignmentDetailByEleve);
+
+
 // mise en cache
 const staticOptions = {
   maxAge: '1y', // Durée de mise en cache

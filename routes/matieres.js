@@ -107,18 +107,29 @@ function updateMatiere(req, res) {
 
 
 
-
 function getMatieres(req, res) {
-    Matiere.find()
-        .populate('prof', '_id nom photo') 
-        .exec((err, matieres) => {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                res.json(matieres);
-            }
-        });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    Matiere.find().countDocuments().exec((err, totalCount) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+
+        Matiere.find()
+            .populate('prof', '_id nom photo')
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec((err, matieres) => {
+                if (err) {
+                    res.status(500).send(err);
+                } else {
+                    res.json({ total: totalCount, matieres });
+                }
+            });
+    });
 }
+
 
 
 function getMatiereById(req, res) {
