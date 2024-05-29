@@ -172,37 +172,105 @@ function getAssignmentsByMatiereAndProf(req, res) {
     });
 }
 
+// function getAssignmentsEleveByMatiere(req, res) {
+//     const auteurId = req.params.auteurId;
+//     const matiereId = req.params.matiereId;
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+
+//     // Calcul de l'offset
+//     const offset = (page - 1) * limit;
+
+//     // Requête pour récupérer les assignments avec l'offset et la limite
+//     Assignment.find({ matiere: matiereId })
+//         .populate({
+//             path: 'details',
+//             match: { auteur: auteurId }
+//         })
+//         .populate('matiere')
+//         .skip(offset)
+//         .limit(limit)
+//         .exec((err, assignments) => {
+//             if (err) {
+//                 return res.status(500).send(err);
+//             }
+
+//             // Filtrer les assignments pour ceux qui correspondent à l'auteur
+//             const filteredAssignments = assignments.filter(assignment => {
+//                 return assignment.details.some(detail => detail.auteur.toString() === auteurId);
+//             });
+
+//             // Total des documents récupérés
+//             const totalCount = filteredAssignments.length;
+
+//             res.json({ total: totalCount, assignments: filteredAssignments });
+//         });
+// }
 
 function getAssignmentsEleveByMatiere(req, res) {
     const auteurId = req.params.auteurId;
     const matiereId = req.params.matiereId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
 
     Assignment.countDocuments({ matiere: matiereId, 'details.auteur': auteurId })
-        .then(totalCount => {
-            return Assignment.find({ matiere: matiereId })
+    .exec((err, totalCount) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+
+        Assignment.find({ matiere: matiereId })
                 .populate({
                     path: 'details',
                     match: { auteur: auteurId }
                 })
                 .populate('matiere')
-                .skip(skip)
+                .skip((page - 1) * limit)
                 .limit(limit)
-                .then(assignments => {
+                .exec((err, assignments) => {
+                    if (err) {
+                        return res.status(500).send(err);
+                    }
+
                     res.json({
-                        page,
-                        limit,
-                        totalCount,
-                        results: assignments
+                        total: totalCount,
+                        assignments: assignments
                     });
                 });
-        })
-        .catch(err => {
-            res.status(500).send(err);
-        });
+    });
+        
+         
 }
+
+
+// function getAssignmentsEleveByMatiere(req, res) {
+//     const auteurId = req.params.auteurId;
+//     const matiereId = req.params.matiereId;
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+
+//     Assignment.countDocuments({ matiere: matiereId, 'details.auteur': auteurId })
+//         .then(totalCount => {
+//             return Assignment.find({ matiere: matiereId })
+//                 .populate({
+//                     path: 'details',
+//                     match: { auteur: auteurId }
+//                 })
+//                 .populate('matiere')
+//                 .skip((page - 1) * limit)
+//                 .limit(limit)
+//                 .then(assignments => {
+//                     res.json({ total: totalCount, assignments });
+//                 });
+//         })
+//         .catch(err => {
+//             res.status(500).send(err);
+//         });
+// }
+
+
+
+
 
 
 
