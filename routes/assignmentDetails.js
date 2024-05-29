@@ -1,26 +1,30 @@
 let AssignmentDetails = require('../model/assignmentDetails');
 let Assignment = require('../model/assignment');
+const { SendMail } = require('../util/mail');
 
 function postAssignmentDetail(req, res) {
-    const { _id, auteur, note, remarque, rendu } = req.body;
+    const { _id, auteur, note, remarque, rendu, prof, sujet, message } = req.body;
 
     AssignmentDetails.findOneAndUpdate(
         { _id: _id},
         { note: note, remarque: remarque, rendu: rendu },
         { new: true, upsert: true },
-        (err, updatedDetail) => {
+        async (err, updatedDetail) => {
             if (err) {
                 console.error("Une erreur s'est produite lors de la mise à jour des détails de l'assignment :", err);
                 return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour des détails de l'assignment." });
             }
-            Assignment.findByIdAndUpdate(_id, { $push: { details: updatedDetail._id } }, (err) => {
-                if (err) {
-                    console.error("Une erreur s'est produite lors de la mise à jour de l'assignment :", err);
-                    return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour de l'assignment." });
-                }
+            try {
+                await Assignment.findByIdAndUpdate(_id, { $push: { details: updatedDetail._id } });
                 console.log("Les détails de l'assignment ont été mis à jour avec succès :", updatedDetail);
+
+                await SendMail(auteur, sujet, message, prof);
+
                 res.status(200).json({ message: "Les détails de l'assignment ont été mis à jour avec succès.", updatedDetail });
-            });
+            } catch (updateErr) {
+                console.error("Une erreur s'est produite lors de la mise à jour de l'assignment :", updateErr);
+                return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour de l'assignment." });
+            }
         }
     );
 }
@@ -128,8 +132,9 @@ function getAssignmentsNonRenduParDevoirProf(req, res) {
             path: 'assignment',
             populate: {
                 path: 'matiere',
-                match: {
-                    prof: profId
+                populate: {
+                    path: 'prof',
+                    match: { _id: profId }
                 }
             }
         })
