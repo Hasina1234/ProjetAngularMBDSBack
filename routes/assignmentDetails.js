@@ -1,5 +1,6 @@
 let AssignmentDetails = require('../model/assignmentDetails');
 let Assignment = require('../model/assignment');
+let Matiere = require('../model/matieres');
 
 function postAssignmentDetail(req, res) {
     const { _id, auteur, note, remarque, rendu } = req.body;
@@ -24,6 +25,8 @@ function postAssignmentDetail(req, res) {
         }
     );
 }
+
+
 
 
 
@@ -228,6 +231,39 @@ function getAssignmentsNonRenduProf(req, res) {
 }
 
 
+function getDetailDevoirByAssignmentId(req, res) {
+    const assignmentId = req.params.idAssignment;
+    const eleveId = req.params.idEleve;
+    // Ajout des logs pour idAssignment et eleveId
+    console.log("ID de l'assignment:", assignmentId);
+    console.log("ID de l'élève:", eleveId);
+    // Trouver l'assignment par son ID
+    Assignment.findById(assignmentId)
+       .populate('details') // Peuple les détails liés à l'assignment
+       .exec((err, assignment) => {
+            if (err) {
+                return res.status(500).send(err);
+            }
+            if (!assignment) {
+                return res.status(404).send("Devoir non trouvé");
+            }
+
+            // Filtrer pour obtenir uniquement les détails marqués comme rendus et dont l'auteur est égal à eleveId
+            const detailsRendus = assignment.details.filter(detail => detail.rendu && detail.auteur.toString() === eleveId);
+
+            // Vérifier s'il y a des détails rendus
+            if (detailsRendus.length > 0) {
+                res.json(detailsRendus);
+            } else {
+                res.status(400).send("Aucun détail de devoir rendu pour cet assignment");
+            }
+        });
+}
+
+
+
+
+
 function newAssignmentDetail(req, res) {
     const { assignmentId, auteurId, note, remarque, rendu } = req.body;
 
@@ -260,7 +296,104 @@ function newAssignmentDetail(req, res) {
         });
 }
 
+function getAssignmentsTotalCount(req, res) {
+    const matiereId = req.params.id;
+    const profId = req.params.idp;
+
+    // Vérifier si matiereId et profId existent
+    if (!matiereId || !profId) {
+        console.log("matiereId ou profId manquant");
+        return res.json({
+            renduCount: 0,
+            nonRenduCount: 0,
+            totalCount: 0
+        });
+    }
+
+    Matiere.findById(matiereId, (err, matiere) => {
+        if (err || !matiere) {
+            console.log("Matière non trouvée ou erreur: ", err);
+            return res.json({
+                renduCount: 0,
+                nonRenduCount: 0,
+                totalCount: 0
+            });
+        }
+
+        console.log("Matière trouvée: ", matiere);
+
+        const fetchAssignments = (rendu) => {
+            return new Promise((resolve, reject) => {
+                console.log("Fetching assignments with rendu =", rendu);
+                AssignmentDetails.find({ rendu: rendu })
+                    .populate({
+                        path: 'assignment',
+                        match: {
+                            matiere: matiereId
+                        },
+                        populate: {
+                            path: 'matiere',
+                            match: {
+                                prof: profId
+                            }
+                        }
+                    })
+                    .populate('auteur')
+                    .exec((err, assignments) => {
+                        if (err) {
+                            console.log("Erreur lors de la récupération des assignments: ", err);
+                            reject(err);
+                        } else {
+                            const filteredAssignments = assignments.filter(a => a.assignment && a.assignment.matiere);
+                            resolve(filteredAssignments);
+                        }
+                    });
+            });
+        };
+
+        const fetchAllAssignmentsByProf = () => {
+            return new Promise((resolve, reject) => {
+                console.log("Fetching all assignments created by the professor");
+                Assignment.find({ matiere: matiereId })
+                    .populate('matiere')
+                    .exec((err, assignments) => {
+                        if (err) {
+                            console.log("Erreur lors de la récupération de tous les assignments: ", err);
+                            reject(err);
+                        } else {
+                            resolve(assignments);
+                        }
+                    });
+            });
+        };
+
+        Promise.all([fetchAssignments(true), fetchAssignments(false), fetchAllAssignmentsByProf()])
+            .then(results => {
+                const renduCount = results[0].length;
+                const nonRenduCount = results[1].length;
+                const totalCount = results[2].length;
+
+                res.json({
+                    renduCount: renduCount,
+                    nonRenduCount: nonRenduCount,
+                    totalCount: totalCount
+                });
+            })
+            .catch(err => {
+                console.log("Erreur lors de la récupération des données: ", err);
+                res.status(500).send(err);
+            });
+    });
+}
+
+
+
+
+
+
+
 module.exports = { 
+    getAssignmentsTotalCount,
     getAssignmentDetails, 
     postAssignmentDetail, 
     getAssignmentDetailById, 
@@ -270,5 +403,6 @@ module.exports = {
     getAssignmentsNonRenduProf,
     newAssignmentDetail,
     getAssignmentsNonRenduParDevoirProf,
-    getAssignmentsRenduParDevoirProf
+    getAssignmentsRenduParDevoirProf,
+    getDetailDevoirByAssignmentId
 };

@@ -10,7 +10,7 @@ let AssignmentSchema = Schema({
 });
 
 module.exports = mongoose.model('assignments', AssignmentSchema);
-//AssignmentSchema.plugin(mongoosePaginate);
+AssignmentSchema.plugin(mongoosePaginate);
 
 // C'est à travers ce modèle Mongoose qu'on pourra faire le CRUD
 // assignment est le nom de la collection dans la base de données
