@@ -99,6 +99,9 @@ app.route(prefix + '/assignmentDetails/:id')
   .delete(assignmentDetails.deleteAssignmentDetail);
 
 app.route(prefix + '/assignmentsDetails/new').post(assignmentDetails.newAssignmentDetail);
+app.route(prefix + '/assignmentsDetails/getDetailDevoir/:idEleve/:idAssignment').get(assignmentDetails.getDetailDevoirByAssignmentId);
+
+app.route(prefix + '/assignmentsDetails/statistique/:id/:idp').get(assignmentDetails.getAssignmentsTotalCount);
 
 app.route(prefix + '/assignmentsDetails/RenduProf/:id/:idp').get(assignmentDetails.getAssignmentsRenduProf);
 app.route(prefix + '/assignmentsDetails/NonRenduProf/:id/:idp').get(assignmentDetails.getAssignmentsNonRenduProf);
