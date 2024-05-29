@@ -82,6 +82,8 @@ function deleteAssignment(req, res) {
 
 function getAssignmentsRenduEleve(req, res) {
     const auteurId = req.params.id; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
     Assignment.find({})
         .populate({
             path: 'details',
@@ -100,12 +102,22 @@ function getAssignmentsRenduEleve(req, res) {
                 return res.status(500).send(err);
             }
             const filteredAssignments = assignments.filter(assignment => assignment.details.length > 0);
-            res.json(filteredAssignments);
+            const totalCount = filteredAssignments.length;
+            const paginatedAssignments = filteredAssignments.slice((page - 1) * limit, page * limit);
+            res.json({
+                total: totalCount,
+                page: page,
+                totalPages: Math.ceil(totalCount / limit),
+                assignments: paginatedAssignments
+            });
         });
 }
 
 function getAssignmentsNonRenduEleve(req, res) {
     const auteurId = req.params.id; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
+
     Assignment.find({})
         .populate({
             path: 'details',
@@ -132,9 +144,18 @@ function getAssignmentsNonRenduEleve(req, res) {
                 return true;
             });
 
-            res.json(filteredAssignments);
+            const totalCount = filteredAssignments.length;
+            const paginatedAssignments = filteredAssignments.slice((page - 1) * limit, page * limit);
+
+            res.json({
+                total: totalCount,
+                page: page,
+                totalPages: Math.ceil(totalCount / limit),
+                assignments: paginatedAssignments
+            });
         });
 }
+
 
 function getAssignmentsByMatiereAndProf(req, res) {
     const matiereId = req.params.matiereId;
