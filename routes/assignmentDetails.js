@@ -179,7 +179,8 @@ function getAssignmentsRenduProf(req, res) {
                 return res.status(500).send(err);
             }
             
-            const filteredAssignments = assignments.filter(assignment => assignment.assignment.matiere);
+            // Ajout d'une vérification pour s'assurer que assignment.assignment et assignment.assignment.matiere ne sont pas null
+            const filteredAssignments = assignments.filter(assignment => assignment.assignment && assignment.assignment.matiere);
 
             const totalCount = filteredAssignments.length;
 
@@ -193,6 +194,7 @@ function getAssignmentsRenduProf(req, res) {
             });
         });
 }
+
 
 
 function getAssignmentsNonRenduProf(req, res) {
