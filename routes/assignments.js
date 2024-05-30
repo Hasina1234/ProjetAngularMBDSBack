@@ -234,7 +234,7 @@ function getAssignmentsEleveByMatiere(req, res) {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    Assignment.countDocuments({ matiere: matiereId, 'details.auteur': auteurId })
+    Assignment.countDocuments({ matiere: matiereId })
     .exec((err, totalCount) => {
         if (err) {
             return res.status(500).send(err);
