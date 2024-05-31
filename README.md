@@ -1,7 +1,7 @@
 # ProjetAngularMBDSBack
-# 15- RAHARIMANANTENA NY ONY Diary et 25- RAKOTOMANGA Hasindranto
+## 15- RAHARIMANANTENA NY ONY Diary et 24- RAKOTOMANGA Hasindranto
 
-## Fonctionnalités de l'étudiant
+### Fonctionnalités de l'étudiant
 - **Interface de connexion :** Une interface de connexion pour se connecter.
 - **Interface d'inscription :** Une interface d'inscription où l'étudiant peut créer manuellement son compte.
 - **Interface d'accueil :** Une interface d'accueil pour voir la liste des matières et permettre d'accéder aux devoirs liés à chaque matière.
@@ -9,7 +9,7 @@
 - **Interface de modification de profil :** Lors de l'inscription, l'élève n'a pas encore de photo. Cette interface permet de modifier le profil pour ajouter une photo.
 - **Menu des devoirs :** Un menu affichant la liste des devoirs rendus et non rendus, regroupés par matière, avec une pagination pour faciliter la navigation.
 
-## Fonctionnalités du professeur
+### Fonctionnalités du professeur
 - **Interface de connexion :** Une interface de connexion pour se connecter.
 - **Interface accueil :** Une interface accueil pour voir la matière rattachée au professeur et permettre d’accéder aux boutons de modification et suppression de cette matière. Cela permet aussi de voir le nombre total des devoirs qui sont rattachés à la matière, le nombre total des devoirs rendus ainsi que le nombre total des devoirs non rendus.
 - **Interface ajout devoir :** Une interface pour ajouter un nouveau devoir pour la matière du professeur.
@@ -19,7 +19,7 @@
 - **Interface ajout professeur :** Une interface pour ajouter d’autres professeurs pour avoir accès à l’application.
 - **Interface liste des professeurs :** Une interface pour voir la liste de tous les professeurs.
 
-## Installation
+### Installation
 Avant de pouvoir exécuter ce projet sur votre machine, vous devez d'abord :
 1. **Cloner le dépôt :**
    - Back : `git clone https://github.com/raharimanantenadiary/ProjetAngularMBDSBack.git`
@@ -28,14 +28,14 @@ Avant de pouvoir exécuter ce projet sur votre machine, vous devez d'abord :
    - Nodemailer : `npm install nodemailer`
    - Pour le lancement du projet, installez d’abord les dépendances avec `npm install`
 
-## Exécution
+### Exécution
 Pour exécuter le projet, utilisez les commandes suivantes :
 - `npm start` pour démarrer le back 
 - `ng serve` pour démarrer le front
 
 **NB :** Vous devrez lancer les commandes d’exécution du projet dans les répertoires où ils se trouvent.
 
-## Outils utilisés
+### Outils utilisés
 - Card
 - Stepper
 - Spinner
@@ -46,7 +46,7 @@ Pour exécuter le projet, utilisez les commandes suivantes :
 - Filtre multi-critère
 - Nav-bar et tool-bar
 
-## Outils utilisés pour l’inscription
+### Outils utilisés pour l’inscription
 Nous avons utilisé du JWT (JSON Web Token) et bcrypt pour l’authentification et le hachage des mots de passe.
 
 ### Détails :
@@ -57,9 +57,9 @@ Nous avons utilisé du JWT (JSON Web Token) et bcrypt pour l’authentification 
   - bcrypt est un algorithme de hachage puissant qui permet de sécuriser les mots de passe avant de les stocker dans la base de données.
   - Il utilise un salt unique pour chaque mot de passe, ce qui protège contre les attaques par dictionnaire et autres attaques similaires.
 
-## Sécurité utilisateur
+### Sécurité utilisateur
 Afin de garantir que chaque utilisateur ne puisse pas voir les liens des autres utilisateurs, nous avons protégé les URL avec des Guards d'Angular pour assurer la sécurité des données.
 
-## Difficultés rencontrées
+### Difficultés rencontrées
 - **Envoi de mail :** La configuration des paramètres a été un peu difficile, mais nous avons pu trouver des solutions grâce à des recherches.
 - **Drag and drop :** L’adaptation du scroll infini dans la partie drag and drop a été un peu compliquée du côté de l'affichage.
