@@ -1,6 +1,6 @@
 # ProjetAngularMBDSBack
 
-## Fonctionnalités de l'étudiant
+### Fonctionnalités de l'étudiant
 	•	Interface de connexion : Une interface de connexion pour se connecter.
 •	Interface d'inscription : Une interface d'inscription où l'étudiant peut créer manuellement son compte.
 •	Interface d'accueil : Une interface d'accueil pour voir la liste des matières et permettre d'accéder aux devoirs liés à chaque matière.
