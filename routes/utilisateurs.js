@@ -17,7 +17,7 @@ function uploadPhotoAndGetFileName(req) {
         return null;
     }
     const fileName = `${uploadedFile.originalname}`;
-    const destinationPath = path.join(__dirname, '/../uploads', fileName);
+    const destinationPath = path.join(__dirname, '../uploads', fileName);
     fs.renameSync(uploadedFile.path, destinationPath); 
     console.log('Fichier uploadé avec succès ! Chemin du fichier :', destinationPath);
     return fileName; 
