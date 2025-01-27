@@ -1,5 +1,4 @@
-# ProjetAngularMBDSBack
-## 15- RAHARIMANANTENA NY ONY Diary et 24- RAKOTOMANGA Hasindranto Nirina
+
 
 ### Fonctionnalités de l'étudiant
 - **Interface de connexion :** Une interface de connexion pour se connecter.
